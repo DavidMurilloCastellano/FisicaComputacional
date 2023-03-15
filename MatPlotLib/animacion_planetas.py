@@ -28,7 +28,7 @@
 #
 # donde xi_j es la componente x del planeta i-ésimo en el instante de
 # tiempo j-ésimo, e yi_j lo mismo en la componente y. El programa asume que
-# el nº de planetas es siempre el mismo.
+# el nº de planetas es siempre el mismo. Cada bloque es un frame (instante).
 # ¡OJO! Los datos están separados por comas.
 # 
 # Si solo se especifica un instante de tiempo, se genera una imagen en pdf
@@ -59,8 +59,9 @@ y_max = 50
 interval = 100 # Tiempo entre fotogramas en milisegundos
 show_trail = True # Muestra la "estela" del planeta
 trail_width = 1 # Ancho de la estela
-save_to_file = True # False: muestra la animación por pantalla,
-                     # True: la guarda en un fichero
+save_to_file = False # False: muestra la animación por pantalla,
+                     # True: la guarda en un fichero 
+                     # (CAMBIARLO CUANDO SE TENGA LA DEFINITIVA)
 dpi = 150 # Calidad del vídeo de salida (dots per inch)
 
 # Radio del planeta, en las mismas unidades que la posición
