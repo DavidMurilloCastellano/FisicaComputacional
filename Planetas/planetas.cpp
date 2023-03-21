@@ -127,23 +127,42 @@ double dist3(double x[], double y[])
 
 //Función ac: calcula la aceleración a la que está sometida cada cuerpo en un instante determinado a partir
 //de la ley de gravitación de Newton en las unidades en las que se está trabajando (G=1).
-//Argumentos: a,r; vectores de aceleración y posición de cada cuerpo en el instante considerado, respectivamente;
+//Argumentos: a,r,m; vectores de aceleración, posición y masa de cada cuerpo en el instante considerado, respect;
 //n, número de cuerpos del sistema
-void ac(double a[], double r[], int n)
+void ac(double a[], double r[], double m[], int n)
 {
-    double cte;
-    int i,j;
-    
+    double acel[2], r1[2], r2[2], cte; //r1 es el vector r_i; r2 es el r_j
+    int i,j,k;
+
+    k=2*n-1;
+    for (i=0;i<=k;i=i+2)
+    {
+        acel[0]=0.0; acel[1]=0.0; //Inicializamos la suma
+        r1[0]=r[i]; r1[1]=r[i+1];
+        for(j=0;j<=k;j=j+2)
+        {
+            if(j!=i)
+            {
+                r2[0]=r[j]; r2[1]=r[j+1];
+                cte=m[j/2]/dist3(r1,r2);
+                acel[0]=acel[0]+cte*(r2[0]-r1[0]);
+                acel[1]=acel[1]+cte*(r2[1]-r1[1]);
+            }
+        }
+        a[i]=acel[0]; a[i+1]=acel[1]; //Pasamos al vector aceleración el valor final
+    }
+
     return;
 }
+
 
 int main(void)
 {
     //Reescalamos los datos de las condiciones iniciales
-    reescala(8);
+    //reescala(8);
 
     //Escribimos las posiciones y velocidades iniciales en el fichero correspondiente
-    PosVelInic(8);
+    //PosVelInic(8);
 
 
     return 0;
