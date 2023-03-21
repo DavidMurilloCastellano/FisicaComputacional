@@ -102,7 +102,7 @@ void PosVelInic(int n)
     }
 
     //Volcamos al nuevo fichero
-    fichOut.precision(15);
+    fichOut.precision(8);
     for(i=0;i<=1;i++)
     {
         for(j=0;j<=m;j++)
@@ -115,8 +115,27 @@ void PosVelInic(int n)
     return;
 }
 
-//Función 
+//Función dist3: calcula la distancia al cubo entre dos puntos del espacio.
+//Argumentos: x, y; vectores de 2-dim que contienen las coordenadas de cada punto.
+double dist3(double x[], double y[])
+{
+    double d;
+    d=sqrt((x[0]-y[0])*(x[0]-y[0])+(x[1]-y[1])*(x[1]-y[1]));
+    d=d*d*d;
+    return d;
+}
 
+//Función ac: calcula la aceleración a la que está sometida cada cuerpo en un instante determinado a partir
+//de la ley de gravitación de Newton en las unidades en las que se está trabajando (G=1).
+//Argumentos: a,r; vectores de aceleración y posición de cada cuerpo en el instante considerado, respectivamente;
+//n, número de cuerpos del sistema
+void ac(double a[], double r[], int n)
+{
+    double cte;
+    int i,j;
+    
+    return;
+}
 
 int main(void)
 {
