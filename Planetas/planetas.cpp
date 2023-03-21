@@ -92,19 +92,13 @@ void PosVelInic(int n)
             cout << "Error al abrir el fichero";
 
         for(j=0;j<=n;j++)
-        {
             fichIn >> datos[0][0]; //Descartamos las lecturas de las masas
-        }
 
         for(j=0;j<=m;j=j+2)
-        {
             fichIn >> datos[0][j]; //Leemos las posiciones (eje X)
-        }
 
         for(j=1;j<=m;j=j+2)
-        {
             fichIn >> datos[1][j]; //Leemos las velocidades (sentido positivo del eje Y, giro antihorario)
-        }
     }
 
     //Volcamos al nuevo fichero
