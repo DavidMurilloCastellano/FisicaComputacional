@@ -140,10 +140,10 @@ void ac(double a[], double r[], int n)
 int main(void)
 {
     //Reescalamos los datos de las condiciones iniciales
-    //reescala(8);
+    reescala(8);
 
     //Escribimos las posiciones y velocidades iniciales en el fichero correspondiente
-    //PosVelInic(8);
+    PosVelInic(8);
 
 
     return 0;
