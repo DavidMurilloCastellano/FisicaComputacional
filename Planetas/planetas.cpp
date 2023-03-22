@@ -11,7 +11,8 @@ using namespace std;
 #define c 1.496e11 //Cte de distancia que aparece en el guion
 #define N 8 //Número de cuerpos en nuestro sistema
 #define L 40 //Doble del número máximo de cuerpos que se espera en el sistema
-#define s 0.1 //Valor del paso que vamos a usar en los desarrollos en serie
+#define s 0.05 //Valor del paso que vamos a usar en los desarrollos en serie
+#define S 20 //Mayor valor de tiempo que se alcanzará en las unidades del guion
 
 //Cabecera con todas las funciones que hemos definido
 void reescala(int n);
@@ -24,14 +25,17 @@ void vh(double v[], double a[], float h, int n);
 
 int main(void)
 {
-    ifstream fichIn;
+    ifstream fichIn, fichIn2;
     ofstream fichOut;
-    double r[L], v[L], a[L];
+    double r[L], v[L], a[L], m[L/2];
+    float h;
     int i,j,k;
 
     //Inicializamos a 0 todos los vectores recién definidos
     for (i=0; i<L; i++)
     {
+        if (i<N)
+            m[i]=0.0;
         r[i]=0.0;
         v[i]=0.0;
         a[i]=0.0;
@@ -47,6 +51,7 @@ int main(void)
     //El fichero "pos-vel-acel.txt" se estructura según, cada 3 línea, posiciones, velocidades y aceleraciones
     //en el instante dado, ocupando las columnas impares las coordenadas X y las pares las Y de cada cuerpo 
     fichIn.open("pos-vel_iniciales.txt");
+    fichIn2.open("datos.txt");
     fichOut.open("pos-vel-acel.txt");
 
     //Pasamos al nuevo archivo los datos iniciales
@@ -63,15 +68,49 @@ int main(void)
     fichIn.close();
     
     fichOut.precision(8); //Establecemos la precisión con la que se escriben los datos en el fichero
-        for (i=0; i<k; i++)
-            fichOut << fixed << r[i] << " ";
-        fichOut << endl;
-        for (i=0; i<k; i++)
-            fichOut << fixed << v[i] << " ";
-        fichOut << endl;
+    for (i=0; i<k; i++)
+        fichOut << fixed << r[i] << " ";
+    fichOut << endl;
+    for (i=0; i<k; i++)
+        fichOut << fixed << v[i] << " ";
+    fichOut << endl;
     
+    //Leemos las masas de los cuerpos
+    i=0;
+    while(!fichIn2.eof() && i<N)
+    {
+        if(!fichIn2.is_open())
+            cout << "Error al abrir el fichero";
+        fichIn2 >> m[i]; //Pasamos a nuestro vector las posiciones iniciales
+        i++;
+    }
+    fichIn2.close();
 
+    //Calculamos el vector de aceleraciones en el instante inicial y lo escribimos en el fichero
+    ac(a,r,m,N);
+    for (i=0; i<k; i++)
+        fichOut << fixed << a[i] << " ";
+    fichOut << endl;
+    
+    //Calculamos las posiciones, velocidades y aceleraciones de cada cuerpo para los instantes posteriores
+    h=s;
+    while(h<=S)
+    {
+        rh(r,v,a,s,N);
+        vh(v,a,s,N);
+        ac(a,r,m,N);
+        vh(v,a,s,N);
 
+        //Escribimos los nuevos vectores en el fichero
+        for(i=0;i<k;i++)
+            fichIn >> r[i];
+        for(i=0;i<k;i++)
+            fichIn >> v[i];
+        for(i=0;i<k;i++)
+            fichIn >> a[i];
+
+        h=h+s;
+    }
 
     fichOut.close();
 
@@ -243,7 +282,7 @@ void rh(double r[], double v[], double a[], float h, int n)
     return;
 }
 
-//Función vh: calcula los dos primeros sumando de la velocidad en un instante h posterior a partir del desarrollo 
+//Función vh: calcula los dos primeros sumandos de la velocidad en un instante h posterior a partir del desarrollo 
 //en serie
 //Argumentos: v, a, vectores posiciones, velocidades y aceleraciones en el instante anterior;
 //h, paso; n, número de cuerpos
