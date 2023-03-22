@@ -9,7 +9,7 @@ using namespace std;
 #define G 6.67e-11 //Cte de gravitación universal
 #define M 1.99e30 //Masa del Sol
 #define c 1.496e11 //Cte de distancia que aparece en el guion
-#define N 8 //Número de cuerpos en nuestro sistema
+#define N 9 //Número de cuerpos en nuestro sistema
 #define L 40 //Doble del número máximo de cuerpos que se espera en el sistema
 #define s 0.05 //Valor del paso que vamos a usar en los desarrollos en serie
 #define S 20 //Mayor valor de tiempo que se alcanzará en las unidades del guion
@@ -30,6 +30,10 @@ int main(void)
     double r[L], v[L], a[L], m[L/2];
     float h;
     int i,j,k;
+
+    //Comprobamos que no se sobrepasa el número de cuerpos
+    if (2*N>L)
+        cout << "Reduzca el número de cuerpos" << endl;
 
     //Inicializamos a 0 todos los vectores recién definidos
     for (i=0; i<L; i++)
@@ -81,7 +85,7 @@ int main(void)
     {
         if(!fichIn2.is_open())
             cout << "Error al abrir el fichero";
-        fichIn2 >> m[i]; //Pasamos a nuestro vector las posiciones iniciales
+        fichIn2 >> m[i]; //Pasamos a nuestro vector las masas
         i++;
     }
     fichIn2.close();
@@ -91,7 +95,7 @@ int main(void)
     for (i=0; i<k; i++)
         fichOut << fixed << a[i] << " ";
     fichOut << endl;
-    
+/*    
     //Calculamos las posiciones, velocidades y aceleraciones de cada cuerpo para los instantes posteriores
     h=s;
     while(h<=S)
@@ -111,7 +115,7 @@ int main(void)
 
         h=h+s;
     }
-
+*/
     fichOut.close();
 
     return 0;
@@ -239,7 +243,7 @@ double dist3(double x[], double y[])
 //n, número de cuerpos del sistema
 void ac(double a[], double r[], double m[], int n)
 {
-    double acel[2], r1[2], r2[2], cte; //r1 es el vector r_i; r2 es el r_j
+    double acel[2], r1[2], r2[2], cte, d; //r1 es el vector r_i; r2 es el r_j
     int i,j,k;
 
     k=2*n;
@@ -247,14 +251,25 @@ void ac(double a[], double r[], double m[], int n)
     {
         acel[0]=0.0; acel[1]=0.0; //Inicializamos la suma
         r1[0]=r[i]; r1[1]=r[i+1];
-        for(j=0;j<=k;j=j+2)
+        for(j=0;j<k;j=j+2)
         {
             if(j!=i)
             {
                 r2[0]=r[j]; r2[1]=r[j+1];
-                cte=m[j/2]/dist3(r1,r2);
-                acel[0]=acel[0]+cte*(r2[0]-r1[0]); //Las componentes pares corresponden al eje X
-                acel[1]=acel[1]+cte*(r2[1]-r1[1]); ////Las componentes impares corresponden al eje Y
+                d=dist3(r1,r2);
+                if(d==0) //Comprobamos que no dividimos entre 0
+                {
+                    acel[0]=1;
+                    acel[1]=1;
+                    j=k+1;
+                }
+                else
+                {
+                    cte=m[j/2]/d;
+                    acel[0]=acel[0]+cte*(r2[0]-r1[0]); //Las componentes pares corresponden al eje X
+                    acel[1]=acel[1]+cte*(r2[1]-r1[1]); //Las componentes impares corresponden al eje Y
+                }
+                
             }
         }
         a[i]=acel[0]; a[i+1]=acel[1]; //Pasamos al vector aceleración el valor final
