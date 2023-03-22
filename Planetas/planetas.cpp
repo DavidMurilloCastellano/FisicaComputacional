@@ -12,7 +12,7 @@ using namespace std;
 #define N 9 //Número de cuerpos en nuestro sistema
 #define L 40 //Doble del número máximo de cuerpos que se espera en el sistema
 #define s 0.05 //Valor del paso que vamos a usar en los desarrollos en serie
-#define S 20 //Mayor valor de tiempo que se alcanzará en las unidades del guion
+#define S 20 //Mayor valor de tiempo que se alcanzará (en las unidades del guion)
 
 //Cabecera con todas las funciones que hemos definido
 void reescala(int n);
@@ -22,7 +22,8 @@ void ac(double a[], double r[], double m[], int n);
 void rh(double r[], double v[], double a[], float h, int n);
 void vh(double v[], double a[], float h, int n);
 
-
+//Función que calcula las posiciones, velocidades y aceleraciones de nuestro modelo en cada instante, escribiéndolas
+//en el fichero "pos-vel-acel.txt".
 int main(void)
 {
     ifstream fichIn, fichIn2;
@@ -35,88 +36,95 @@ int main(void)
     if (2*N>L)
         cout << "Reduzca el número de cuerpos" << endl;
 
-    //Inicializamos a 0 todos los vectores recién definidos
-    for (i=0; i<L; i++)
+    else
     {
-        if (i<N)
-            m[i]=0.0;
-        r[i]=0.0;
-        v[i]=0.0;
-        a[i]=0.0;
-    }
+        //Inicializamos a 0 todos los vectores recién definidos
+        for (i=0; i<L; i++)
+        {
+            if (i<N)
+                m[i]=0.0;
+            r[i]=0.0;
+            v[i]=0.0;
+            a[i]=0.0;
+        }
     
-    //Reescalamos los datos de las condiciones iniciales
-    //reescala(N);
+        //Reescalamos los datos de las condiciones iniciales
+        //reescala(N);
 
-    //Escribimos las posiciones y velocidades iniciales en el fichero correspondiente
-    //PosVelInic(N);
+        //Escribimos las posiciones y velocidades iniciales en el fichero correspondiente
+        //PosVelInic(N);
 
-    //Abrimos los ficheros de los que tomamos los datos y en los que vamos a escribir los cálculos posteriores
-    //El fichero "pos-vel-acel.txt" se estructura según, cada 3 línea, posiciones, velocidades y aceleraciones
-    //en el instante dado, ocupando las columnas impares las coordenadas X y las pares las Y de cada cuerpo 
-    fichIn.open("pos-vel_iniciales.txt");
-    fichIn2.open("datos.txt");
-    fichOut.open("pos-vel-acel.txt");
+        //Abrimos los ficheros de los que tomamos los datos y en los que vamos a escribir los cálculos posteriores
+        //El fichero "pos-vel-acel.txt" se estructura según, cada 3 línea, posiciones, velocidades y aceleraciones
+        //en el instante dado, ocupando las columnas impares las coordenadas X y las pares las Y de cada cuerpo 
+        fichIn.open("pos-vel_iniciales.txt");
+        fichIn2.open("datos.txt");
+        fichOut.open("pos-vel-acel.txt");
 
-    //Pasamos al nuevo archivo los datos iniciales
-    k=2*N;
-    while(!fichIn.eof())
-    {
-        if(!fichIn.is_open())
-            cout << "Error al abrir el fichero";
-        for(i=0;i<k;i++)
-            fichIn >> r[i]; //Pasamos a nuestro vector las posiciones iniciales
-        for(i=0;i<k;i++)
-            fichIn >> v[i]; //Pasamos a nuestro vector las velocidades iniciales
-    }
-    fichIn.close();
+        //Pasamos al nuevo archivo los datos iniciales
+        k=2*N;
+        while(!fichIn.eof())
+        {
+            if(!fichIn.is_open())
+                cout << "Error al abrir el fichero";
+            for(i=0;i<k;i++)
+                fichIn >> r[i]; //Pasamos a nuestro vector las posiciones iniciales
+            for(i=0;i<k;i++)
+                fichIn >> v[i]; //Pasamos a nuestro vector las velocidades iniciales
+        }
+        fichIn.close();
     
-    fichOut.precision(8); //Establecemos la precisión con la que se escriben los datos en el fichero
-    for (i=0; i<k; i++)
-        fichOut << fixed << r[i] << " ";
-    fichOut << endl;
-    for (i=0; i<k; i++)
-        fichOut << fixed << v[i] << " ";
-    fichOut << endl;
+        fichOut.precision(8); //Establecemos la precisión con la que se escriben los datos en el fichero
+        for (i=0; i<k; i++)
+            fichOut << fixed << r[i] << " ";
+        fichOut << endl;
+        for (i=0; i<k; i++)
+            fichOut << fixed << v[i] << " ";
+        fichOut << endl;
     
-    //Leemos las masas de los cuerpos
-    i=0;
-    while(!fichIn2.eof() && i<N)
-    {
-        if(!fichIn2.is_open())
-            cout << "Error al abrir el fichero";
-        fichIn2 >> m[i]; //Pasamos a nuestro vector las masas
-        i++;
-    }
-    fichIn2.close();
+        //Leemos las masas de los cuerpos
+        i=0;
+        while(!fichIn2.eof() && i<N)
+        {
+            if(!fichIn2.is_open())
+                cout << "Error al abrir el fichero";
+            fichIn2 >> m[i]; //Pasamos a nuestro vector las masas
+            i++;
+        }
+        fichIn2.close();
 
-    //Calculamos el vector de aceleraciones en el instante inicial y lo escribimos en el fichero
-    ac(a,r,m,N);
-    for (i=0; i<k; i++)
-        fichOut << fixed << a[i] << " ";
-    fichOut << endl;
-/*    
-    //Calculamos las posiciones, velocidades y aceleraciones de cada cuerpo para los instantes posteriores
-    h=s;
-    while(h<=S)
-    {
-        rh(r,v,a,s,N);
-        vh(v,a,s,N);
+        //Calculamos el vector de aceleraciones en el instante inicial y lo escribimos en el fichero
         ac(a,r,m,N);
-        vh(v,a,s,N);
+        for (i=0; i<k; i++)
+            fichOut << fixed << a[i] << " ";
+        fichOut << endl;
+   
+        //Calculamos las posiciones, velocidades y aceleraciones de cada cuerpo para los instantes posteriores
+        h=s;
+        while(h<=S)
+        {
+            rh(r,v,a,s,N);
+            vh(v,a,s,N);
+            ac(a,r,m,N);
+            vh(v,a,s,N);
 
-        //Escribimos los nuevos vectores en el fichero
-        for(i=0;i<k;i++)
-            fichIn >> r[i];
-        for(i=0;i<k;i++)
-            fichIn >> v[i];
-        for(i=0;i<k;i++)
-            fichIn >> a[i];
+            //Escribimos los nuevos vectores en el fichero
+            for(i=0;i<k;i++)
+                fichOut << fixed << r[i] << " ";
+            fichOut << endl;
+            for(i=0;i<k;i++)
+                fichOut << fixed << v[i] << " ";
+            fichOut << endl;
+            for(i=0;i<k;i++)
+                fichOut << fixed << a[i] << " ";
+            fichOut << endl;
 
-        h=h+s;
+            h=h+s;
+        }
+
+        fichOut.close();
     }
-*/
-    fichOut.close();
+    
 
     return 0;
 }
