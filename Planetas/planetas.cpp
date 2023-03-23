@@ -21,6 +21,8 @@ double dist3(double x[], double y[]);
 void ac(double a[], double r[], double m[], int n);
 void rh(double r[], double v[], double a[], float h, int n);
 void vh(double v[], double a[], float h, int n);
+void formato_animacion(void);
+int periodo(float T[], float h, int n);
 
 //Función que calcula las posiciones, velocidades y aceleraciones de nuestro modelo en cada instante, escribiéndolas
 //en el fichero "pos-vel-acel.txt".
@@ -29,8 +31,8 @@ int main(void)
     ifstream fichIn, fichIn2;
     ofstream fichOut;
     double r[L], v[L], a[L], m[L/2];
-    float h;
-    int i,j,k;
+    float h, T[N-1];
+    int i,j,k,l;
 
     //Comprobamos que no se sobrepasa el número de cuerpos
     if (2*N>L)
@@ -38,6 +40,7 @@ int main(void)
 
     else
     {
+        
         //Inicializamos a 0 todos los vectores recién definidos
         for (i=0; i<L; i++)
         {
@@ -121,8 +124,18 @@ int main(void)
 
             h=h+s;
         }
-
         fichOut.close();
+
+        //A partir de aquí ya se tiene el fichero "pos-vel-acel.txt" relleno.
+        //Escribimos en otro fichero con el formato adecuado para poder usar "animacion_planetas.py"
+        formato_animacion();
+
+        //Calculamos los periodos de la órbita de cada cuerpo
+        l=periodo(T,s,N); //Actualizar fichero?
+        cout << l << endl;
+        for(i=0;i<8;i++)
+            cout << T[i] << endl;
+        
     }
     
 
@@ -237,6 +250,7 @@ void PosVelInic(int n)
 
 //Función dist3: calcula la distancia al cubo entre dos puntos del espacio.
 //Argumentos: x, y; vectores de 2-dim que contienen las coordenadas de cada punto.
+//Retorno: d, distancia al cubo entre los puntos dados
 double dist3(double x[], double y[])
 {
     double d;
@@ -325,5 +339,106 @@ void vh(double v[], double a[], float h, int n)
     return;
 }
 
+//Función formato_animacion: vuelca las posiciones generadas por el programa "planetas.cpp" en el fichero 
+//"planets_data.dat" con el formato apropiado para luego usar el código de "animacion_planetas.py"
+void formato_animacion(void)
+{
+    ifstream fichIn;
+    ofstream fichOut;
+    double r[L];
+    int i, j, k;
+
+    fichIn.open("pos-vel-acel.txt");
+    fichOut.open("planets_data.dat");
+
+    k=2*N; j=1;
+    fichOut.precision(8);
+    while(!fichIn.eof())
+    {
+        if(!fichIn.is_open())
+            cout << "Error al abrir el fichero";
+        if(j%3==1) //Comprobamos que vamos a copiar solo las posiciones
+        {
+            for(i=0;i<k;i++)
+                fichIn >> r[i]; //Copiamos los datos del fichero de entrada a nuestro vector
+            for(i=0;i<k;i=i+2)
+            {
+                fichOut << fixed << r[i] << ", " << r[i+1] << endl; //Lo pasamos al fichero de salida formateado
+            }
+            fichOut << endl;
+        }
+        else //Descartamos el resto de medidas
+        {
+            for(i=0;i<k;i++)
+                fichIn >> r[0];
+        }
+        j++;
+    }
+
+    fichIn.close();
+    fichOut.close();
+
+    return;
+}
+
+//Función periodo: calcula el periodo de rotación (en días) de cada cuerpo a partir de sus posiciones. Como todos
+//parten de y=0, completarán una vuelta cuando su coordenada y pase de ser negativa a mayor o igual que 0. También 
+//se tiene en cuenta que los planetas más próximos al Sol tienen menor periodo de traslación. No se calcula el
+//periodo del Sol.
+//Argumentos: T[], vector de periodos; h, paso con el que se ha aplicado el algoritmo; n, número de cuerpos
+//Retorno: i, número de planetas que completan un periodo con los datos del fichero "planets_data.dat"
+int periodo(float T[], float h, int n)
+{
+    float aux[n-1][2];
+    int i,j;
+    ifstream fichIn;
+
+    //Inicializamos a 0 la primera columna de la matriz y el vector de periodos
+    n--;
+    for(j=0;j<n;j++)
+    {
+        aux[j][0]=0.0;
+        T[j]=0.0;
+    }
+    fichIn.open("planetas_posiciones.txt"); //Fichero con los datos de "planets_data.dat" pero sin comas
+    i=0;
+
+    while(i<n && !fichIn.eof())
+    {
+        if(!fichIn.is_open())
+            cout << "Error al abrir el fichero";
+        //Pasamos los datos de la iteración anterior a la segunda columna para aquellos planetas que no han dado
+        //una vuelta todavía
+        for(j=i;j<n;j++)
+            aux[j][1]=aux[j][0];
+        //Leemos los datos de la siguiente iteación
+        //Ignoramos las lecturas de la posición del Sol y los cuerpos que ya han dado una vuelta
+        for(j=0;j<=i;j++)
+        {
+            fichIn >> aux[i][0]; fichIn >> aux[i][0];
+        }
+        //Guardamos las medidas de la siguiente iteración de los planetas que no han dado una vuelta
+        for(j=i;j<n;j++)
+        {
+            fichIn >> aux[j][0]; fichIn >> aux[j][0]; //Nos quedamos con la lectura en Y
+            if(aux[j][1]<0 && aux[j][0]>=0)
+                i++;
+            else
+            {
+                T[j]=T[j]+h;
+            }
+        }
+
+    }
+
+    //Pasamos a días (terrestres) los datos obtenidos e indicamos con 0 los planetas que no completaron una vuelta
+    for(j=0;j<i;j++)
+        T[j]=58.129*T[j];
+    for(j=i;j<n;j++)
+        T[j]=0;
+
+    fichIn.close();
+    return i;
+}
 //Hay que comprobar: órbitas son elípticas, los periodos de rotación son similares a los reales, la energía se
 //conserva y las órbitas son estables frente a perturbaciones de las condiciones iniciales.

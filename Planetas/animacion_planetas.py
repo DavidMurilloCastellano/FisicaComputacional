@@ -51,10 +51,10 @@ file_in = "C:\projects\FisicaComputacional\Planetas\planets_data.dat" # Nombre d
 file_out = "planetas" # Nombre del fichero de salida (sin extensión)
 
 # Límites de los ejes X e Y. HAY QUE CAMBIAR ESTO
-x_min = -5
-x_max = 5
-y_min = -10 
-y_max = 10
+x_min = -32
+x_max = 32
+y_min = -32 
+y_max = 32
 
 interval = 100 # Tiempo entre fotogramas en milisegundos
 show_trail = True # Muestra la "estela" del planeta
