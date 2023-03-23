@@ -19,10 +19,10 @@ void reescala(int n);
 void PosVelInic(int n);
 double dist3(double x[], double y[]);
 void ac(double a[], double r[], double m[], int n);
-void rh(double r[], double v[], double a[], float h, int n);
-void vh(double v[], double a[], float h, int n);
+void rh(double r[], double v[], double a[], double h, int n);
+void vh(double v[], double a[], double h, int n);
 void formato_animacion(void);
-int periodo(float T[], float h, int n);
+int periodo(float T[], double h, int n);
 
 //Función que calcula las posiciones, velocidades y aceleraciones de nuestro modelo en cada instante, escribiéndolas
 //en el fichero "pos-vel-acel.txt".
@@ -30,8 +30,8 @@ int main(void)
 {
     ifstream fichIn, fichIn2;
     ofstream fichOut;
-    double r[L], v[L], a[L], m[L/2];
-    float h, T[N-1];
+    double r[L], v[L], a[L], m[L/2], h;
+    float T[N-1];
     int i,j,k,l;
 
     //Comprobamos que no se sobrepasa el número de cuerpos
@@ -303,7 +303,7 @@ void ac(double a[], double r[], double m[], int n)
 //Función rh: calcula las posiciones en un instante h posterior a partir del desarrollo en serie
 //Argumentos: r, v, a, vectores posiciones, velocidades y aceleraciones en el instante anterior;
 //h, paso; n, número de cuerpos
-void rh(double r[], double v[], double a[], float h, int n)
+void rh(double r[], double v[], double a[], double h, int n)
 {
     int i,k;
     double d;
@@ -323,7 +323,7 @@ void rh(double r[], double v[], double a[], float h, int n)
 //en serie
 //Argumentos: v, a, vectores posiciones, velocidades y aceleraciones en el instante anterior;
 //h, paso; n, número de cuerpos
-void vh(double v[], double a[], float h, int n)
+void vh(double v[], double a[], double h, int n)
 {
     int i,k;
     float d;
@@ -387,19 +387,17 @@ void formato_animacion(void)
 //periodo del Sol.
 //Argumentos: T[], vector de periodos; h, paso con el que se ha aplicado el algoritmo; n, número de cuerpos
 //Retorno: i, número de planetas que completan un periodo con los datos del fichero "planets_data.dat"
-int periodo(float T[], float h, int n)
+int periodo(float T[], double h, int n) 
 {
-    float aux[n-1][2];
+    float aux[n-1][2], t;
     int i,j;
     ifstream fichIn;
 
     //Inicializamos a 0 la primera columna de la matriz y el vector de periodos
-    n--;
+    n--; t=0.0;
     for(j=0;j<n;j++)
-    {
         aux[j][0]=0.0;
-        T[j]=0.0;
-    }
+
     fichIn.open("planetas_posiciones.txt"); //Fichero con los datos de "planets_data.dat" pero sin comas
     i=0;
 
@@ -422,13 +420,12 @@ int periodo(float T[], float h, int n)
         {
             fichIn >> aux[j][0]; fichIn >> aux[j][0]; //Nos quedamos con la lectura en Y
             if(aux[j][1]<0 && aux[j][0]>=0)
-                i++;
-            else
             {
-                T[j]=T[j]+h;
+                i++;
+                T[j]=t;
             }
         }
-
+        t=t+h;
     }
 
     //Pasamos a días (terrestres) los datos obtenidos e indicamos con 0 los planetas que no completaron una vuelta
