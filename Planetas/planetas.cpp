@@ -133,9 +133,8 @@ int main(void)
         //Calculamos los periodos de la órbita de cada cuerpo
         l=periodo(T,s,N); //Actualizar fichero?
         cout << l << endl;
-        for(i=0;i<8;i++)
+        for(i=0;i<N-1;i++)
             cout << T[i] << endl;
-        
     }
     
 
@@ -422,7 +421,8 @@ int periodo(float T[], double h, int n)
             if(aux[j][1]<0 && aux[j][0]>=0)
             {
                 i++;
-                T[j]=t;
+                //Calculamos el periodo mediante una interpolación lineal de los dos puntos
+                T[j]=t-(aux[j][0]*h)/(aux[j][0]-aux[j][1]);
             }
         }
         t=t+h;
