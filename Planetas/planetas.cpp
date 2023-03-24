@@ -23,6 +23,7 @@ void rh(double r[], double v[], double a[], double h, int n);
 void vh(double v[], double a[], double h, int n);
 void formato_animacion(void);
 int periodo(float T[], double h, int n);
+void compara_periodos(float T[], int n);
 
 //Función que calcula las posiciones, velocidades y aceleraciones de nuestro modelo en cada instante, escribiéndolas
 //en el fichero "pos-vel-acel.txt".
@@ -130,11 +131,11 @@ int main(void)
         //Escribimos en otro fichero con el formato adecuado para poder usar "animacion_planetas.py"
         formato_animacion();
 
-        //Calculamos los periodos de la órbita de cada cuerpo
+        //Calculamos los periodos de cada órbita
         l=periodo(T,s,N);
-        cout << l << endl;
-        for(i=0;i<N-1;i++)
-            cout << T[i] << endl;
+
+        compara_periodos(T,l);
+
     }
     
 
@@ -390,7 +391,7 @@ void formato_animacion(void)
 //se tiene en cuenta que los planetas más próximos al Sol tienen menor periodo de traslación. No se calcula el
 //periodo del Sol.
 //Argumentos: T[], vector de periodos; h, paso con el que se ha aplicado el algoritmo; n, número de cuerpos
-//Retorno: i, número de planetas que completan un periodo con los datos del fichero "planets_data.dat"
+//Retorno: i, número de planetas que completan un periodo con los datos del fichero "planetas_posiciones.txt"
 int periodo(float T[], double h, int n) 
 {
     float aux[n-1][2], t;
@@ -441,6 +442,44 @@ int periodo(float T[], double h, int n)
 
     fichIn.close();
     return i;
+}
+
+//Función compara_periodos: a partir del fichero ""
+//Argumentos:
+void compara_periodos(float T[], int n)
+{
+    ifstream fichIn;
+    ofstream fichOut;
+    float Ttab;
+    int i;
+    //Calculamos los periodos de la órbita de cada cuerpo. Escribimos datos tabulados en fichero de salida
+    //para calcular errores relativos
+    fichOut.open("planetas_periodos.txt");
+    fichIn.open("periodos_reales.txt");
+    //Escribimos la cabecera del fichero de salida
+    fichOut << "=====================================================================" <<endl <<endl;
+    fichOut << "Datos tabulados (días)    Periodos estimados (días)    Error relativo (%)" << endl;
+
+    i=0;
+    fichOut.precision(3);
+    
+    while(!fichIn.eof() && i<n)
+    {
+        if(!fichIn.is_open())
+            cout << "Error al abrir el fichero";
+
+        fichIn >> Ttab; //Leemos el dato tabulado
+        fichOut << "        " << fixed << Ttab << "        ";
+        fichOut << "           " << fixed << T[i] << "           ";
+        fichOut << "         " << fixed << abs(Ttab-T[i])/Ttab*100<< endl; //FORMATEAR BIEN
+        i++;
+    }
+    fichOut << "=====================================================================" ;
+
+    fichIn.close();
+    fichOut.close();
+    
+    return;
 }
 //Hay que comprobar: órbitas son elípticas, los periodos de rotación son similares a los reales, la energía se
 //conserva y las órbitas son estables frente a perturbaciones de las condiciones iniciales.
