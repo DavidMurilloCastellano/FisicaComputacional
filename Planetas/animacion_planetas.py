@@ -50,16 +50,16 @@ import numpy as np
 file_in = "C:\projects\FisicaComputacional\Planetas\planets_data.dat" # Nombre del fichero de datos CAMBIAR
 file_out = "planetas" # Nombre del fichero de salida (sin extensión)
 
-# Límites de los ejes X e Y. HAY QUE CAMBIAR ESTO
+# Límites de los ejes X e Y.
 x_min = -32
 x_max = 32
-y_min = -32 
-y_max = 32
+y_min = -100
+y_max = 100
 
-interval = 100 # Tiempo entre fotogramas en milisegundos
+interval = 40 # Tiempo entre fotogramas en milisegundos
 show_trail = True # Muestra la "estela" del planeta
 trail_width = 1 # Ancho de la estela
-save_to_file = False # False: muestra la animación por pantalla,
+save_to_file = True # False: muestra la animación por pantalla,
                      # True: la guarda en un fichero 
                      # (CAMBIARLO CUANDO SE TENGA LA DEFINITIVA)
 dpi = 150 # Calidad del vídeo de salida (dots per inch)
@@ -67,7 +67,7 @@ dpi = 150 # Calidad del vídeo de salida (dots per inch)
 # Radio del planeta, en las mismas unidades que la posición
 # Puede ser un número (el radio de todos los planetas) o una lista con
 # el radio de cada uno
-planet_radius = 0.01
+planet_radius = 0.1
 #planet_radius = [0.5, 0.7, 1.1]
 
 

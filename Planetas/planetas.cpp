@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <iomanip>
 using namespace std;
 
 #define G 6.67e-11 //Cte de gravitación universal
@@ -12,7 +13,8 @@ using namespace std;
 #define N 9 //Número de cuerpos en nuestro sistema
 #define L 40 //Doble del número máximo de cuerpos que se espera en el sistema
 #define s 0.05 //Valor del paso que vamos a usar en los desarrollos en serie
-#define S 20 //Mayor valor de tiempo que se alcanzará (en las unidades del guion)
+#define S 1200 //Mayor valor de tiempo que se alcanzará (en las unidades del guion)
+#define D 5 //Cada cuantas líneas vuelca datos al fichero que genera la simulación del sistema
 
 //Cabecera con todas las funciones que hemos definido
 void reescala(int n);
@@ -21,7 +23,7 @@ double dist3(double x[], double y[]);
 void ac(double a[], double r[], double m[], int n);
 void rh(double r[], double v[], double a[], double h, int n);
 void vh(double v[], double a[], double h, int n);
-void formato_animacion(void);
+void formato_animacion(int d);
 int periodo(float T[], double h, int n);
 void compara_periodos(float T[], int n);
 
@@ -51,7 +53,7 @@ int main(void)
             v[i]=0.0;
             a[i]=0.0;
         }
-    
+/*    
         //Reescalamos los datos de las condiciones iniciales
         reescala(N);
 
@@ -126,16 +128,16 @@ int main(void)
             h=h+s;
         }
         fichOut.close();
-
+*/
         //A partir de aquí ya se tiene el fichero "pos-vel-acel.txt" relleno.
         //Escribimos en otro fichero con el formato adecuado para poder usar "animacion_planetas.py"
-        formato_animacion();
-
+        formato_animacion(D);
+/*
         //Calculamos los periodos de cada órbita
         l=periodo(T,s,N);
 
         compara_periodos(T,l);
-
+*/
     }
     
 
@@ -342,7 +344,9 @@ void vh(double v[], double a[], double h, int n)
 //Función formato_animacion: vuelca las posiciones generadas por el programa "planetas.cpp" en el fichero 
 //"planets_data.dat" con el formato apropiado para luego usar el código de "animacion_planetas.py". Simultáneamente,
 //también los vuelca en el fichero "planetas_posiciones.txt" sin comas para aplicar otras funciones de C++ luego
-void formato_animacion(void)
+//Argumentos: d, cada cuantas líneas copia al fichero "animacion_planetas.py" para que no quede un vídeo demasiado
+//largo
+void formato_animacion(int d)
 {
     ifstream fichIn;
     ofstream fichOut, fichOut2;
@@ -365,7 +369,8 @@ void formato_animacion(void)
                 fichIn >> r[i]; //Copiamos los datos del fichero de entrada a nuestro vector
             for(i=0;i<k;i=i+2)
             {
-                fichOut << fixed << r[i] << ", " << r[i+1] << endl; //Lo pasamos al fichero de salida formateado
+                if (j%d==1)
+                    fichOut << fixed << r[i] << ", " << r[i+1] << endl; //Lo pasamos al fichero de salida formateado
                 fichOut2 << fixed << r[i] << " " << r[i+1] << endl;
             }
             fichOut << endl;
@@ -444,8 +449,11 @@ int periodo(float T[], double h, int n)
     return i;
 }
 
-//Función compara_periodos: a partir del fichero ""
-//Argumentos:
+//Función compara_periodos: a partir del fichero "periodos_reales.txt", donde se encuentran los periodos orbitales
+//de los planetas del sistema solar por proximidad al Sol, se toman valores tabulados para dichas magnitudes y se
+//comparan con los obtenidos por este método, expresándolo en el fichero "planetas_periodos.txt"
+//Argumentos: T[], vector con los periodos orbitales estimados por el algoritmo; n, número de planetas que han
+//completado un periodo
 void compara_periodos(float T[], int n)
 {
     ifstream fichIn;
@@ -457,24 +465,23 @@ void compara_periodos(float T[], int n)
     fichOut.open("planetas_periodos.txt");
     fichIn.open("periodos_reales.txt");
     //Escribimos la cabecera del fichero de salida
-    fichOut << "=====================================================================" <<endl <<endl;
+    fichOut << "=========================================================================" <<endl <<endl;
+    fichOut << n << " planetas han completado al menos un periodo orbital, obteniendo:" << endl << endl;
     fichOut << "Datos tabulados (días)    Periodos estimados (días)    Error relativo (%)" << endl;
 
-    i=0;
-    fichOut.precision(3);
-    
+    i=0;   
     while(!fichIn.eof() && i<n)
     {
         if(!fichIn.is_open())
             cout << "Error al abrir el fichero";
 
         fichIn >> Ttab; //Leemos el dato tabulado
-        fichOut << "        " << fixed << Ttab << "        ";
-        fichOut << "           " << fixed << T[i] << "           ";
-        fichOut << "         " << fixed << abs(Ttab-T[i])/Ttab*100<< endl; //FORMATEAR BIEN
+        fichOut << fixed << setprecision(3) << setw(14) << Ttab;
+        fichOut << fixed << setprecision(3) << setw(28) <<  T[i];
+        fichOut << fixed << setprecision(3) << setw(24) << abs(Ttab-T[i])/Ttab*100<< endl; //FORMATEAR BIEN
         i++;
     }
-    fichOut << "=====================================================================" ;
+    fichOut << endl << "=========================================================================" ;
 
     fichIn.close();
     fichOut.close();
