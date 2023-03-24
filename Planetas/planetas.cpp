@@ -52,10 +52,10 @@ int main(void)
         }
     
         //Reescalamos los datos de las condiciones iniciales
-        //reescala(N);
+        reescala(N);
 
         //Escribimos las posiciones y velocidades iniciales en el fichero correspondiente
-        //PosVelInic(N);
+        PosVelInic(N);
 
         //Abrimos los ficheros de los que tomamos los datos y en los que vamos a escribir los cálculos posteriores
         //El fichero "pos-vel-acel.txt" se estructura según, cada 3 línea, posiciones, velocidades y aceleraciones
@@ -131,7 +131,7 @@ int main(void)
         formato_animacion();
 
         //Calculamos los periodos de la órbita de cada cuerpo
-        l=periodo(T,s,N); //Actualizar fichero?
+        l=periodo(T,s,N);
         cout << l << endl;
         for(i=0;i<N-1;i++)
             cout << T[i] << endl;
@@ -339,19 +339,21 @@ void vh(double v[], double a[], double h, int n)
 }
 
 //Función formato_animacion: vuelca las posiciones generadas por el programa "planetas.cpp" en el fichero 
-//"planets_data.dat" con el formato apropiado para luego usar el código de "animacion_planetas.py"
+//"planets_data.dat" con el formato apropiado para luego usar el código de "animacion_planetas.py". Simultáneamente,
+//también los vuelca en el fichero "planetas_posiciones.txt" sin comas para aplicar otras funciones de C++ luego
 void formato_animacion(void)
 {
     ifstream fichIn;
-    ofstream fichOut;
+    ofstream fichOut, fichOut2;
     double r[L];
     int i, j, k;
 
     fichIn.open("pos-vel-acel.txt");
     fichOut.open("planets_data.dat");
+    fichOut2.open("planetas_posiciones.txt");
 
     k=2*N; j=1;
-    fichOut.precision(8);
+    fichOut.precision(8); fichOut2.precision(8);
     while(!fichIn.eof())
     {
         if(!fichIn.is_open())
@@ -363,8 +365,10 @@ void formato_animacion(void)
             for(i=0;i<k;i=i+2)
             {
                 fichOut << fixed << r[i] << ", " << r[i+1] << endl; //Lo pasamos al fichero de salida formateado
+                fichOut2 << fixed << r[i] << " " << r[i+1] << endl;
             }
             fichOut << endl;
+            fichOut2 << endl;
         }
         else //Descartamos el resto de medidas
         {
@@ -376,6 +380,7 @@ void formato_animacion(void)
 
     fichIn.close();
     fichOut.close();
+    fichOut2.close();
 
     return;
 }
