@@ -53,7 +53,7 @@ file_out = "planetas" # Nombre del fichero de salida (sin extensión)
 # Límites de los ejes X e Y.
 x_min = -32
 x_max = 32
-y_min = -100
+y_min = -100 #SOLUCIONAR
 y_max = 100
 
 interval = 40 # Tiempo entre fotogramas en milisegundos

@@ -132,12 +132,12 @@ int main(void)
         //A partir de aquí ya se tiene el fichero "pos-vel-acel.txt" relleno.
         //Escribimos en otro fichero con el formato adecuado para poder usar "animacion_planetas.py"
         formato_animacion(D);
-/*
+        
         //Calculamos los periodos de cada órbita
         l=periodo(T,s,N);
 
         compara_periodos(T,l);
-*/
+
     }
     
 
@@ -357,7 +357,7 @@ void formato_animacion(int d)
     fichOut.open("planets_data.dat");
     fichOut2.open("planetas_posiciones.txt");
 
-    k=2*N; j=1;
+    k=2*N; j=1; d=3*d; //Para tener en cuenta que las posiciones aparecen cada 3 líneas
     fichOut.precision(8); fichOut2.precision(8);
     while(!fichIn.eof())
     {
@@ -478,7 +478,7 @@ void compara_periodos(float T[], int n)
         fichIn >> Ttab; //Leemos el dato tabulado
         fichOut << fixed << setprecision(3) << setw(14) << Ttab;
         fichOut << fixed << setprecision(3) << setw(28) <<  T[i];
-        fichOut << fixed << setprecision(3) << setw(24) << abs(Ttab-T[i])/Ttab*100<< endl; //FORMATEAR BIEN
+        fichOut << fixed << setprecision(3) << setw(24) << abs(Ttab-T[i])/Ttab*100<< endl;
         i++;
     }
     fichOut << endl << "=========================================================================" ;
