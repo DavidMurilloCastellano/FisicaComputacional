@@ -12,20 +12,21 @@ using namespace std;
 #define c 1.496e11 //Cte de distancia que aparece en el guion
 #define N 9 //Número de cuerpos en nuestro sistema
 #define L 40 //Doble del número máximo de cuerpos que se espera en el sistema
-#define s 0.05 //Valor del paso que vamos a usar en los desarrollos en serie
+#define s 0.01 //Valor del paso que vamos a usar en los desarrollos en serie
 #define S 1200 //Mayor valor de tiempo que se alcanzará (en las unidades del guion)
 #define D 5 //Cada cuantas líneas vuelca datos al fichero que genera la simulación del sistema
 
 //Cabecera con todas las funciones que hemos definido
 void reescala(int n);
 void PosVelInic(int n);
-double dist3(double x[], double y[]);
+double dist(double x[], double y[]);
 void ac(double a[], double r[], double m[], int n);
 void rh(double r[], double v[], double a[], double h, int n);
 void vh(double v[], double a[], double h, int n);
 void formato_animacion(int d);
 int periodo(float T[], double h, int n);
 void compara_periodos(float T[], int n);
+double energia(double r[], double v[], double m[], int n);
 
 //Función que calcula las posiciones, velocidades y aceleraciones de nuestro modelo en cada instante, escribiéndolas
 //en el fichero "pos-vel-acel.txt".
@@ -135,8 +136,10 @@ int main(void)
         
         //Calculamos los periodos de cada órbita
         l=periodo(T,s,N);
-
+        //Comprobamos que son próximos a los reales
         compara_periodos(T,l);
+
+        //Calculamos la energía del sistema en cada instante
 
     }
     
@@ -250,10 +253,10 @@ void PosVelInic(int n)
     return;
 }
 
-//Función dist3: calcula la distancia al cubo entre dos puntos del espacio.
+//Función dist: calcula la distancia entre dos puntos del espacio.
 //Argumentos: x, y; vectores de 2-dim que contienen las coordenadas de cada punto.
 //Retorno: d, distancia al cubo entre los puntos dados
-double dist3(double x[], double y[])
+double dist(double x[], double y[])
 {
     double d;
     d=sqrt((x[0]-y[0])*(x[0]-y[0])+(x[1]-y[1])*(x[1]-y[1]));
@@ -268,27 +271,28 @@ double dist3(double x[], double y[])
 void ac(double a[], double r[], double m[], int n)
 {
     double acel[2], r1[2], r2[2], cte, d; //r1 es el vector r_i; r2 es el r_j
-    int i,j,k;
+    int i,j;
 
-    k=2*n;
-    for (i=0;i<k;i=i+2)
+    n=2*n;
+    for (i=0;i<n;i=i+2)
     {
         acel[0]=0.0; acel[1]=0.0; //Inicializamos la suma
         r1[0]=r[i]; r1[1]=r[i+1];
-        for(j=0;j<k;j=j+2)
+        for(j=0;j<n;j=j+2)
         {
             if(j!=i)
             {
                 r2[0]=r[j]; r2[1]=r[j+1];
-                d=dist3(r1,r2);
+                d=dist(r1,r2);
                 if(d==0) //Comprobamos que no dividimos entre 0
                 {
                     acel[0]=1;
                     acel[1]=1;
-                    j=k+1;
+                    j=n+1;
                 }
                 else
                 {
+                    d=d*d*d; //Elevamos al cubo
                     cte=m[j/2]/d;
                     acel[0]=acel[0]+cte*(r2[0]-r1[0]); //Las componentes pares corresponden al eje X
                     acel[1]=acel[1]+cte*(r2[1]-r1[1]); //Las componentes impares corresponden al eje Y
@@ -488,5 +492,37 @@ void compara_periodos(float T[], int n)
     
     return;
 }
+
+//Función energia: devuelve la energía del sistema en un instante determinado
+//Argumentos: r[], v[], vectores con las posiciones y velocidades de los cuerpos respectivamente en dicho instante;
+//m, vector de masas de los cuerpos; n, número de cuerpos que conforman el sistema
+//Retorno: E, energía total del sistema
+double energia(double r[], double v[], double m[], int n)
+{
+    double E, sum, r1[2], r2[2];
+    int i,j;
+
+    E=0.0;
+    n=2*n;
+    for(i=0;i<n;i=i+2)
+    {
+        r1[0]=r[i]; r1[1]=r[i+1];
+        sum=0.0;
+        for(j=0;j<n;j=j+2)
+        {
+            if(j!=i)
+            {
+                r2[0]=r[j]; r2[1]=r[j+1];
+                sum=sum+m[j/2]/dist(r1,r2);
+            }
+                
+        }
+
+        E=E+m[i/2]/2*((v[i]*v[i]+v[i+1]*v[i+1])/2-sum);
+    }
+    return E;
+}
+
+
 //Hay que comprobar: órbitas son elípticas, los periodos de rotación son similares a los reales, la energía se
 //conserva y las órbitas son estables frente a perturbaciones de las condiciones iniciales.
