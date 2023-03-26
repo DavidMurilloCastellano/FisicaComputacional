@@ -12,8 +12,8 @@ using namespace std;
 #define c 1.496e11 //Cte de distancia que aparece en el guion
 #define N 9 //Número de cuerpos en nuestro sistema
 #define L 40 //Doble del número máximo de cuerpos que se espera en el sistema
-#define s 0.01 //Valor del paso que vamos a usar en los desarrollos en serie
-#define S 1200 //Mayor valor de tiempo que se alcanzará (en las unidades del guion)
+#define s 0.05 //Valor del paso que vamos a usar en los desarrollos en serie
+#define S 200 //Mayor valor de tiempo que se alcanzará (en las unidades del guion)
 #define D 5 //Cada cuantas líneas vuelca datos al fichero que genera la simulación del sistema
 
 //Cabecera con todas las funciones que hemos definido
@@ -33,7 +33,7 @@ double energia(double r[], double v[], double m[], int n);
 int main(void)
 {
     ifstream fichIn, fichIn2;
-    ofstream fichOut;
+    ofstream fichOut, fichOut2;
     double r[L], v[L], a[L], m[L/2], h;
     float T[N-1];
     int i,j,k,l;
@@ -54,12 +54,12 @@ int main(void)
             v[i]=0.0;
             a[i]=0.0;
         }
-/*    
+   
         //Reescalamos los datos de las condiciones iniciales
-        reescala(N);
+        //reescala(N);
 
         //Escribimos las posiciones y velocidades iniciales en el fichero correspondiente
-        PosVelInic(N);
+        //PosVelInic(N);
 
         //Abrimos los ficheros de los que tomamos los datos y en los que vamos a escribir los cálculos posteriores
         //El fichero "pos-vel-acel.txt" se estructura según, cada 3 línea, posiciones, velocidades y aceleraciones
@@ -67,6 +67,7 @@ int main(void)
         fichIn.open("pos-vel_iniciales.txt");
         fichIn2.open("datos.txt");
         fichOut.open("pos-vel-acel.txt");
+        fichOut2.open("planetas_energias.txt");
 
         //Pasamos al nuevo archivo los datos iniciales
         k=2*N;
@@ -107,9 +108,16 @@ int main(void)
         fichOut << endl;
    
         //Calculamos las posiciones, velocidades y aceleraciones de cada cuerpo para los instantes posteriores
-        h=s;
+        h=0;
         while(h<=S)
         {
+            //Simultáneamente, calculamos la energía del sistema en este instante y volcamos al fichero
+            //"planetas_energias.txt". Este fichero tiene el formato apropiado para representar a partir del
+            //código "animacion_planetas.py" una gráfica que muestre la energía del sistema en función del tiempo
+            fichOut2 << h << ", " << fixed << energia(r,v,m,N) << endl;
+
+            h=h+s;
+
             rh(r,v,a,s,N);
             vh(v,a,s,N);
             ac(a,r,m,N);
@@ -125,19 +133,18 @@ int main(void)
             for(i=0;i<k;i++)
                 fichOut << fixed << a[i] << " ";
             fichOut << endl;
-
-            h=h+s;
         }
         fichOut.close();
-*/
+        fichOut2.close();
+
         //A partir de aquí ya se tiene el fichero "pos-vel-acel.txt" relleno.
         //Escribimos en otro fichero con el formato adecuado para poder usar "animacion_planetas.py"
-        formato_animacion(D);
+        //formato_animacion(D);
         
         //Calculamos los periodos de cada órbita
-        l=periodo(T,s,N);
+        //l=periodo(T,s,N);
         //Comprobamos que son próximos a los reales
-        compara_periodos(T,l);
+        //compara_periodos(T,l);
 
         //Calculamos la energía del sistema en cada instante
 
@@ -508,7 +515,7 @@ double energia(double r[], double v[], double m[], int n)
     {
         r1[0]=r[i]; r1[1]=r[i+1];
         sum=0.0;
-        for(j=0;j<n;j=j+2)
+        for(j=0;j<n;j=j+2) //Calculamos la contribución a la energía del cuerpo i por el potencial creado por el j
         {
             if(j!=i)
             {
@@ -518,7 +525,7 @@ double energia(double r[], double v[], double m[], int n)
                 
         }
 
-        E=E+m[i/2]/2*((v[i]*v[i]+v[i+1]*v[i+1])/2-sum);
+        E=E+m[i/2]*((v[i]*v[i]+v[i+1]*v[i+1])/2-sum);
     }
     return E;
 }

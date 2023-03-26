@@ -47,19 +47,19 @@ import numpy as np
 
 # Parámetros
 # ========================================
-file_in = "C:\projects\FisicaComputacional\Planetas\planets_data.dat" # Nombre del fichero de datos CAMBIAR
-file_out = "planetas" # Nombre del fichero de salida (sin extensión)
+file_in = "C:\projects\FisicaComputacional\Planetas\planetas_energias.txt" # Nombre del fichero de datos CAMBIAR
+file_out = "energías" # Nombre del fichero de salida (sin extensión)
 
 # Límites de los ejes X e Y.
-x_min = -32
-x_max = 32
-y_min = -100 #SOLUCIONAR
-y_max = 100
+x_min = 0
+x_max = 1200
+y_min = 4840 #SOLUCIONAR
+y_max = 4850
 
 interval = 40 # Tiempo entre fotogramas en milisegundos
 show_trail = True # Muestra la "estela" del planeta
 trail_width = 1 # Ancho de la estela
-save_to_file = True # False: muestra la animación por pantalla,
+save_to_file = False # False: muestra la animación por pantalla,
                      # True: la guarda en un fichero 
                      # (CAMBIARLO CUANDO SE TENGA LA DEFINITIVA)
 dpi = 150 # Calidad del vídeo de salida (dots per inch)
