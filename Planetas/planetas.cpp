@@ -12,9 +12,9 @@ using namespace std;
 #define c 1.496e11 //Cte de distancia que aparece en el guion
 #define N 9 //Número de cuerpos en nuestro sistema
 #define L 40 //Doble del número máximo de cuerpos que se espera en el sistema
-#define s 0.05 //Valor del paso que vamos a usar en los desarrollos en serie
-#define S 200 //Mayor valor de tiempo que se alcanzará (en las unidades del guion)
-#define D 5 //Cada cuantas líneas vuelca datos al fichero que genera la simulación del sistema
+#define s 0.01 //Valor del paso que vamos a usar en los desarrollos en serie
+#define S 13 //Mayor valor de tiempo que se alcanzará (en las unidades del guion)
+#define D 2 //Cada cuantas líneas vuelca datos al fichero que genera la simulación del sistema
 
 //Cabecera con todas las funciones que hemos definido
 void reescala(int n);
@@ -27,6 +27,7 @@ void formato_animacion(int d);
 int periodo(float T[], double h, int n);
 void compara_periodos(float T[], int n);
 double energia(double r[], double v[], double m[], int n);
+double excentricidad(double E, double r, double v, double m);
 
 //Función que calcula las posiciones, velocidades y aceleraciones de nuestro modelo en cada instante, escribiéndolas
 //en el fichero "pos-vel-acel.txt".
@@ -34,7 +35,7 @@ int main(void)
 {
     ifstream fichIn, fichIn2;
     ofstream fichOut, fichOut2;
-    double r[L], v[L], a[L], m[L/2], h;
+    double r[L], v[L], a[L], m[L/2], h, E;
     float T[N-1];
     int i,j,k,l;
 
@@ -44,7 +45,7 @@ int main(void)
 
     else
     {
-        
+ 
         //Inicializamos a 0 todos los vectores recién definidos
         for (i=0; i<L; i++)
         {
@@ -56,10 +57,10 @@ int main(void)
         }
    
         //Reescalamos los datos de las condiciones iniciales
-        //reescala(N);
+        reescala(N);
 
         //Escribimos las posiciones y velocidades iniciales en el fichero correspondiente
-        //PosVelInic(N);
+        PosVelInic(N);
 
         //Abrimos los ficheros de los que tomamos los datos y en los que vamos a escribir los cálculos posteriores
         //El fichero "pos-vel-acel.txt" se estructura según, cada 3 línea, posiciones, velocidades y aceleraciones
@@ -108,15 +109,20 @@ int main(void)
         fichOut << endl;
    
         //Calculamos las posiciones, velocidades y aceleraciones de cada cuerpo para los instantes posteriores
-        h=0;
+        h=0.0; l=0; 
+        fichOut2.precision(6);
         while(h<=S)
         {
             //Simultáneamente, calculamos la energía del sistema en este instante y volcamos al fichero
             //"planetas_energias.txt". Este fichero tiene el formato apropiado para representar a partir del
             //código "animacion_planetas.py" una gráfica que muestre la energía del sistema en función del tiempo
-            fichOut2 << h << ", " << fixed << energia(r,v,m,N) << endl;
+            if(l%D==0) //Para no tomar todos los puntos
+            {
+                fichOut2 << 58.129*h << ", " << fixed << energia(r,v,m,N)*1000 << endl;
+            }
+           
 
-            h=h+s;
+            h=h+s;// l++;
 
             rh(r,v,a,s,N);
             vh(v,a,s,N);
@@ -139,7 +145,7 @@ int main(void)
 
         //A partir de aquí ya se tiene el fichero "pos-vel-acel.txt" relleno.
         //Escribimos en otro fichero con el formato adecuado para poder usar "animacion_planetas.py"
-        //formato_animacion(D);
+        formato_animacion(D);
         
         //Calculamos los periodos de cada órbita
         //l=periodo(T,s,N);
@@ -267,7 +273,7 @@ double dist(double x[], double y[])
 {
     double d;
     d=sqrt((x[0]-y[0])*(x[0]-y[0])+(x[1]-y[1])*(x[1]-y[1]));
-    d=d*d*d;
+
     return d;
 }
 
@@ -368,23 +374,24 @@ void formato_animacion(int d)
     fichOut.open("planets_data.dat");
     fichOut2.open("planetas_posiciones.txt");
 
-    k=2*N; j=1; d=3*d; //Para tener en cuenta que las posiciones aparecen cada 3 líneas
+    k=2*N; j=0; d=3*d; //Para tener en cuenta que las posiciones aparecen cada 3 líneas
     fichOut.precision(8); fichOut2.precision(8);
     while(!fichIn.eof())
     {
         if(!fichIn.is_open())
             cout << "Error al abrir el fichero";
-        if(j%3==1) //Comprobamos que vamos a copiar solo las posiciones
+        if(j%3==0) //Comprobamos que vamos a copiar solo las posiciones
         {
             for(i=0;i<k;i++)
                 fichIn >> r[i]; //Copiamos los datos del fichero de entrada a nuestro vector
             for(i=0;i<k;i=i+2)
             {
-                if (j%d==1)
+                if (j%d==0)
                     fichOut << fixed << r[i] << ", " << r[i+1] << endl; //Lo pasamos al fichero de salida formateado
                 fichOut2 << fixed << r[i] << " " << r[i+1] << endl;
             }
-            fichOut << endl;
+            if(j%d==0)
+                fichOut << endl;
             fichOut2 << endl;
         }
         else //Descartamos el resto de medidas
@@ -515,13 +522,10 @@ double energia(double r[], double v[], double m[], int n)
     {
         r1[0]=r[i]; r1[1]=r[i+1];
         sum=0.0;
-        for(j=0;j<n;j=j+2) //Calculamos la contribución a la energía del cuerpo i por el potencial creado por el j
+        for(j=i+2;j<n;j=j+2) //Calculamos la contribución a la energía del cuerpo i por el potencial creado por el j
         {
-            if(j!=i)
-            {
-                r2[0]=r[j]; r2[1]=r[j+1];
-                sum=sum+m[j/2]/dist(r1,r2);
-            }
+            r2[0]=r[j]; r2[1]=r[j+1];
+            sum=sum+m[j/2]/dist(r1,r2);
                 
         }
 
@@ -530,6 +534,24 @@ double energia(double r[], double v[], double m[], int n)
     return E;
 }
 
+//Función excentricidad: devuelve la excentricidad de la órbita asociada a un cuerpo
+//Argumentos: E, energía del sistema; r,v, posición y velocidad iniciales del cuerpo; m, masa del cuerpo
+//Retorno: exc, excentricidad de la órbita
+double excentricidad(double E, double r, double v, double m)
+{
+    double exc, l;
+
+    l=m*r*v; l=l*l;
+    exc=sqrt(1+(2*E*l)/(m*m*m));
+    
+    return exc;
+}
 
 //Hay que comprobar: órbitas son elípticas, los periodos de rotación son similares a los reales, la energía se
 //conserva y las órbitas son estables frente a perturbaciones de las condiciones iniciales.
+
+//Qué hay que hacer:
+//· Vídeo(s) órbitas
+//· Plot Energía(t)
+//· Cálculo periodo rotación planetas
+//· Cambio de condiciones iniciales para comprobar la estabilidad frente perturbaciones

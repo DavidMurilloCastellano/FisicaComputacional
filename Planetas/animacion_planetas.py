@@ -47,19 +47,19 @@ import numpy as np
 
 # Parámetros
 # ========================================
-file_in = "C:\projects\FisicaComputacional\Planetas\planetas_energias.txt" # Nombre del fichero de datos CAMBIAR
-file_out = "energías" # Nombre del fichero de salida (sin extensión)
+file_in = "C:\projects\FisicaComputacional\Planetas\planets_data.dat" # Nombre del fichero de datos CAMBIAR
+file_out = "planetas-interiores" # Nombre del fichero de salida (sin extensión)
 
 # Límites de los ejes X e Y.
-x_min = 0
-x_max = 1200
-y_min = 4840 #SOLUCIONAR
-y_max = 4850
+x_min = -3
+x_max = 3
+y_min = -3
+y_max = 3
 
-interval = 40 # Tiempo entre fotogramas en milisegundos
+interval = 50 # Tiempo entre fotogramas en milisegundos
 show_trail = True # Muestra la "estela" del planeta
 trail_width = 1 # Ancho de la estela
-save_to_file = False # False: muestra la animación por pantalla,
+save_to_file = True # False: muestra la animación por pantalla,
                      # True: la guarda en un fichero 
                      # (CAMBIARLO CUANDO SE TENGA LA DEFINITIVA)
 dpi = 150 # Calidad del vídeo de salida (dots per inch)
@@ -67,7 +67,7 @@ dpi = 150 # Calidad del vídeo de salida (dots per inch)
 # Radio del planeta, en las mismas unidades que la posición
 # Puede ser un número (el radio de todos los planetas) o una lista con
 # el radio de cada uno
-planet_radius = 0.1
+planet_radius = 0.06
 #planet_radius = [0.5, 0.7, 1.1]
 
 
@@ -134,7 +134,7 @@ planet_points = list()
 planet_trails = list()
 for planet_pos, radius in zip(frames_data[0], planet_radius):
     x, y = planet_pos
-    #planet_point, = ax.plot(x, y, "o", markersize=10)
+    #planet_point, = ax.plot(x, y, "o", markersize=0.01, color='black')
     planet_point = Circle((x, y), radius)
     ax.add_artist(planet_point)
     planet_points.append(planet_point)
