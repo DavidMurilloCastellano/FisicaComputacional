@@ -14,7 +14,9 @@ using namespace std;
 #define L 40 //Doble del número máximo de cuerpos que se espera en el sistema
 #define s 0.01 //Valor del paso que vamos a usar en los desarrollos en serie
 #define S 13 //Mayor valor de tiempo que se alcanzará (en las unidades del guion)
-#define D 2 //Cada cuantas líneas vuelca datos al fichero que genera la simulación del sistema
+#define D 1 //Cada cuantas líneas vuelca datos al fichero que genera la simulación del sistema
+#define p 3 //Posición que ocupa el cuerpo a perturbar por proximidad al Sol (el Sol ocupa la 0; p=-1 para no perturbar)
+#define P 0.2 //Perturbación de la velocidad inicial en el eje X (en las unidades indicadas en el guion)
 
 //Cabecera con todas las funciones que hemos definido
 void reescala(int n);
@@ -27,7 +29,7 @@ void formato_animacion(int d);
 int periodo(float T[], double h, int n);
 void compara_periodos(float T[], int n);
 double energia(double r[], double v[], double m[], int n);
-double excentricidad(double E, double r, double v, double m);
+//double excentricidad(double E, double r, double v, double m);
 
 //Función que calcula las posiciones, velocidades y aceleraciones de nuestro modelo en cada instante, escribiéndolas
 //en el fichero "pos-vel-acel.txt".
@@ -57,10 +59,10 @@ int main(void)
         }
    
         //Reescalamos los datos de las condiciones iniciales
-        reescala(N);
+        //reescala(N);
 
         //Escribimos las posiciones y velocidades iniciales en el fichero correspondiente
-        PosVelInic(N);
+        //PosVelInic(N);
 
         //Abrimos los ficheros de los que tomamos los datos y en los que vamos a escribir los cálculos posteriores
         //El fichero "pos-vel-acel.txt" se estructura según, cada 3 línea, posiciones, velocidades y aceleraciones
@@ -88,7 +90,11 @@ int main(void)
             fichOut << fixed << r[i] << " ";
         fichOut << endl;
         for (i=0; i<k; i++)
+        {
+            if(i==2*p) //Añadimos la perturbación (velocidad inicial en el eje X)
+                v[i]=v[i]+P;
             fichOut << fixed << v[i] << " ";
+        }
         fichOut << endl;
     
         //Leemos las masas de los cuerpos
@@ -113,16 +119,16 @@ int main(void)
         fichOut2.precision(6);
         while(h<=S)
         {
-            //Simultáneamente, calculamos la energía del sistema en este instante y volcamos al fichero
+        /*    //Simultáneamente, calculamos la energía del sistema en este instante y volcamos al fichero
             //"planetas_energias.txt". Este fichero tiene el formato apropiado para representar a partir del
             //código "animacion_planetas.py" una gráfica que muestre la energía del sistema en función del tiempo
             if(l%D==0) //Para no tomar todos los puntos
             {
                 fichOut2 << 58.129*h << ", " << fixed << energia(r,v,m,N)*1000 << endl;
             }
-           
+        */ 
 
-            h=h+s;// l++;
+            h=h+s; l++;
 
             rh(r,v,a,s,N);
             vh(v,a,s,N);
@@ -151,11 +157,7 @@ int main(void)
         //l=periodo(T,s,N);
         //Comprobamos que son próximos a los reales
         //compara_periodos(T,l);
-
-        //Calculamos la energía del sistema en cada instante
-
     }
-    
 
     return 0;
 }
@@ -533,7 +535,7 @@ double energia(double r[], double v[], double m[], int n)
     }
     return E;
 }
-
+/*
 //Función excentricidad: devuelve la excentricidad de la órbita asociada a un cuerpo
 //Argumentos: E, energía del sistema; r,v, posición y velocidad iniciales del cuerpo; m, masa del cuerpo
 //Retorno: exc, excentricidad de la órbita
@@ -546,7 +548,7 @@ double excentricidad(double E, double r, double v, double m)
     
     return exc;
 }
-
+*/
 //Hay que comprobar: órbitas son elípticas, los periodos de rotación son similares a los reales, la energía se
 //conserva y las órbitas son estables frente a perturbaciones de las condiciones iniciales.
 

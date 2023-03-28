@@ -48,7 +48,7 @@ import numpy as np
 # Parámetros
 # ========================================
 file_in = "C:\projects\FisicaComputacional\Planetas\planets_data.dat" # Nombre del fichero de datos CAMBIAR
-file_out = "planetas-interiores" # Nombre del fichero de salida (sin extensión)
+file_out = "planetas-perturbacion_Tierra" # Nombre del fichero de salida (sin extensión)
 
 # Límites de los ejes X e Y.
 x_min = -3
