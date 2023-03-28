@@ -549,8 +549,6 @@ double excentricidad(double E, double r, double v, double m)
     return exc;
 }
 */
-//Hay que comprobar: órbitas son elípticas, los periodos de rotación son similares a los reales, la energía se
-//conserva y las órbitas son estables frente a perturbaciones de las condiciones iniciales.
 
 //Qué hay que hacer:
 //· Vídeo(s) órbitas
