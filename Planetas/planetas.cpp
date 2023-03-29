@@ -13,9 +13,9 @@ using namespace std;
 #define N 9 //Número de cuerpos en nuestro sistema
 #define L 40 //Doble del número máximo de cuerpos que se espera en el sistema
 #define s 0.01 //Valor del paso que vamos a usar en los desarrollos en serie
-#define S 13 //Mayor valor de tiempo que se alcanzará (en las unidades del guion)
-#define D 1 //Cada cuantas líneas vuelca datos al fichero que genera la simulación del sistema
-#define p 3 //Posición que ocupa el cuerpo a perturbar por proximidad al Sol (el Sol ocupa la 0; p=-1 para no perturbar)
+#define S 20 //Mayor valor de tiempo que se alcanzará (en las unidades del guion)
+#define D 2 //Cada cuantas líneas vuelca datos al fichero que genera la simulación del sistema
+#define p -1 //Posición que ocupa el cuerpo a perturbar por proximidad al Sol (el Sol ocupa la 0; p=-1 para no perturbar)
 #define P 0.2 //Perturbación de la velocidad inicial en el eje X (en las unidades indicadas en el guion)
 
 //Cabecera con todas las funciones que hemos definido
@@ -119,14 +119,14 @@ int main(void)
         fichOut2.precision(6);
         while(h<=S)
         {
-        /*    //Simultáneamente, calculamos la energía del sistema en este instante y volcamos al fichero
+            //Simultáneamente, calculamos la energía del sistema en este instante y volcamos al fichero
             //"planetas_energias.txt". Este fichero tiene el formato apropiado para representar a partir del
             //código "animacion_planetas.py" una gráfica que muestre la energía del sistema en función del tiempo
             if(l%D==0) //Para no tomar todos los puntos
             {
-                fichOut2 << 58.129*h << ", " << fixed << energia(r,v,m,N)*1000 << endl;
+                fichOut2 << 58.129*h << " " << fixed << energia(r,v,m,N)*1000 << " 0.0 0.0" << endl;
             }
-        */ 
+        
 
             h=h+s; l++;
 
@@ -151,7 +151,7 @@ int main(void)
 
         //A partir de aquí ya se tiene el fichero "pos-vel-acel.txt" relleno.
         //Escribimos en otro fichero con el formato adecuado para poder usar "animacion_planetas.py"
-        formato_animacion(D);
+        //formato_animacion(D);
         
         //Calculamos los periodos de cada órbita
         //l=periodo(T,s,N);
