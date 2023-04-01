@@ -113,19 +113,18 @@ void ac(double a[][2], double r[][2], int n)
 }
 
 //Función rh: calcula las posiciones en un instante h posterior a partir del desarrollo en serie
-//Argumentos: r, v, a, vectores posiciones, velocidades y aceleraciones en el instante anterior;
+//Argumentos: r, v, a, matrices posiciones, velocidades y aceleraciones en el instante anterior;
 //h, paso; n, número de cuerpos
-void rh(double r[], double v[], double a[], double h, int n)
+void rh(double r[][2], double v[][2], double a[][2], double h, int n)
 {
-    int i,k;
+    int i;
     double d;
 
-    k=2*n;
     d=h*h/2; //Calculamos las constantes fuera del bucle por optimización
-    for (i=0;i<k;i=i+2)
+    for (i=0;i<n;i++)
     {
-        r[i]=r[i]+h*v[i]+d*a[i];
-        r[i+1]=r[i+1]+h*v[i+1]+d*a[i+1];
+        r[i][0]=r[i][0]+h*v[i][0]+d*a[i][0];
+        r[i][1]=r[i][1]+h*v[i][1]+d*a[i][1];
     }
 
     return;
@@ -133,19 +132,18 @@ void rh(double r[], double v[], double a[], double h, int n)
 
 //Función vh: calcula los dos primeros sumandos de la velocidad en un instante h posterior a partir del desarrollo 
 //en serie
-//Argumentos: v, a, vectores posiciones, velocidades y aceleraciones en el instante anterior;
+//Argumentos: v, a, matrices posiciones, velocidades y aceleraciones en el instante anterior;
 //h, paso; n, número de cuerpos
-void vh(double v[], double a[], double h, int n)
+void vh(double v[][2], double a[][2], double h, int n)
 {
-    int i,k;
+    int i;
     float d;
 
-    k=2*n;
     d=h/2;
-    for (i=0;i<k;i=i+2)
+    for (i=0;i<n;i++)
     {
-        v[i]=v[i]+d*a[i];
-        v[i+1]=v[i+1]+d*a[i+1];
+        v[i][0]=v[i][0]+d*a[i][0];
+        v[i][1]=v[i][1]+d*a[i][1];
     }
 
     return;
