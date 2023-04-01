@@ -72,16 +72,40 @@ double dist(double x[], double y[])
 
 //Función ac: calcula la aceleración a la que está sometida cada partícula en un instante determinado a partir
 //del potencial de Lennard-Jones.
-//Argumentos: a,r; vectores de aceleración, posición y masa de cada partícula en el instante considerado, respect;
+//Argumentos: a,r; matrices de aceleración y posición de cada partícula en el instante considerado, respect.;
 //n, número de partículas del sistema
-void ac(double a[], double r[], double m[], int n)
+void ac(double a[][2], double r[][2], int n)
 {
-    double f[N][N], d, r1[2],r2[2];
+    double f[N], d, d7, r1[2], r2[2], f0, f1;
     int i,j;
+
+    f[0]=0.0; //Un cuerpo no ejerce fuerza sobre sí mismo
+    for(i=0;i<n;i++) 
+        a[i][0]=a[i][1]=0.0; //Inicializamos las sumas a 0
 
     for(i=0;i<n;i++)
     {
-        
+        r1[0]=r[i][0]; r1[1]=r[i][1];
+        for(j=i+1;j<n;j++)
+        {
+            r2[0]=r[j][0]; r2[1]=r[j][1];
+            d=dist(r1,r2);
+            if(d<3) //A distancias largas consideramos la fuerza nula
+            {
+                d7=pow(d,7);
+                f[j]=24*(2/(d7*d7)-1/(d7*d));
+                f0=f[j]*(r2[0]-r1[0]);
+                f1=f[j]*(r2[1]-r1[1]);
+
+                //Calculamos la aceleración proporcionada a la partícula j por la fuerza creada por i
+                a[j][0]=a[j][0]+f0;
+                a[j][1]=a[j][1]+f1;
+
+                //Aplicamos la 3ª ley de Newton para calcular la fuerza experimentada por la partícula i
+                a[i][0]=a[i][0]-f0;
+                a[i][1]=a[i][1]-f1; 
+            }
+        }
     }
 
 
