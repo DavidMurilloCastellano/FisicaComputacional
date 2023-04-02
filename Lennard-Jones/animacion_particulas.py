@@ -56,8 +56,8 @@ x_max = 10
 y_min = 0
 y_max = 10
 
-interval = 50 # Tiempo entre fotogramas en milisegundos
-show_trail = True # Muestra la "estela" del planeta
+interval = 30 # Tiempo entre fotogramas en milisegundos
+show_trail = False # Muestra la "estela" del planeta
 trail_width = 1 # Ancho de la estela
 save_to_file = False # False: muestra la animación por pantalla,
                      # True: la guarda en un fichero 
@@ -68,7 +68,7 @@ dpi = 150 # Calidad del vídeo de salida (dots per inch)
 # Puede ser un número (el radio de todos los planetas) o una lista con
 # el radio de cada uno
 planet_radius = 0.1
-#planet_radius = [0.5, 0.7, 1.1]
+#planet_radius = [0.1, 0.2, 0.3, 0.4, 0.5]
 
 
 # Lectura del fichero de datos
@@ -111,7 +111,7 @@ nplanets = len(frames_data[0])
 fig, ax = plt.subplots()
 
 # Define el rango de los ejes
-ax.axis("equal")  # Misma escala para ejes X e Y
+#ax.axis("equal")  # Misma escala para ejes X e Y
 ax.set_xlim(x_min, x_max)
 ax.set_ylim(y_min, y_max)
 

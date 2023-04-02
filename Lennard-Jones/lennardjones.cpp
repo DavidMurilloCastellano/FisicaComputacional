@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <ctime>
 #include <cstdlib>
 //#include <iomanip>
 using namespace std;
@@ -10,7 +11,8 @@ using namespace std;
 #define N 5 //Número de átomos que conforman nuestro sistema
 #define L 10 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada considerada
 #define s 0.002 //Paso con el que se aplica el algoritmo
-#define S 0.6 //Límite de tiempo hasta el que se considera la simulación
+#define S 4 //Límite de tiempo hasta el que se considera la simulación
+#define D 4 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
 
 //Cabecera con todas las funciones que hemos definido
 void cond_iniciales(int n);
@@ -22,7 +24,7 @@ void vh(double v[][2], double a[][2], double h, int n);
 
 int main(void)
 {
-    int i;
+    int i,k;
     double a[N][2], r[N][2], v[N][2], h;
     ifstream fichIn;
     ofstream fichOut;
@@ -46,7 +48,7 @@ int main(void)
     fichIn.close();
 
     fichOut.open("particulas_posiciones.txt");
-    h=s;
+    h=s; k=1;
     fichOut.precision(6); //Volcamos las posiciones iniciales
     for(i=0;i<N;i++)
         fichOut << r[i][0] << ", " << r[i][1] << endl;
@@ -59,11 +61,13 @@ int main(void)
         ac(a,r,N);
         vh(v,a,s,N);
 
-        for(i=0;i<N;i++)
-            fichOut << r[i][0] << ", " << r[i][1] << endl;
-        fichOut << endl;
-
-        h=h+s;   
+        if(k%D==0)
+        {
+            for(i=0;i<N;i++)
+                fichOut << r[i][0] << ", " << r[i][1] << endl;
+            fichOut << endl;
+        }
+        h=h+s; k++;
     }
     fichOut.close();
     
@@ -81,12 +85,12 @@ void cond_iniciales(int n)
     double v,p,l;
     ofstream fichOut;
 
-    
     v=0.0;
     p=2*Pi/RAND_MAX; //Calculamos la cte por la que hay que multiplicar para generar números aleatorios en [0,2Pi]
     l=1.0*L/RAND_MAX; //Calculamos la cte por la que hay que multiplicar para generar números aleatorios en [0,L]
     fichOut.open("pos-vel_iniciales.txt");
     fichOut.precision(8);
+    srand(time(NULL)); //Establecemos la semilla para la generación de números aleatorios
 
     //Generamos las posiciones y velocidades aleatorias
     for(i=0;i<n;i++)
@@ -127,7 +131,6 @@ double dist(double x[], double y[])
             y[1]=y[1]+L;
     }
         
-
     d=sqrt(a*a+b*b);
 
     return d;
@@ -170,7 +173,6 @@ void ac(double a[][2], double r[][2], int n)
             }
         }
     }
-
 
     return;
 }
