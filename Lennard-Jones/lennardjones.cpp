@@ -7,24 +7,65 @@
 using namespace std;
 
 #define Pi 3.14159265358979 //Valor del número Pi
-#define N 20 //Número de átomos que conforman nuestro sistema
+#define N 5 //Número de átomos que conforman nuestro sistema
 #define L 10 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada considerada
 #define s 0.002 //Paso con el que se aplica el algoritmo
+#define S 0.6 //Límite de tiempo hasta el que se considera la simulación
 
 //Cabecera con todas las funciones que hemos definido
 void cond_iniciales(int n);
 double dist(double x[], double y[]);
-void ac(double a[], double r[], double m[], int n);
-void rh(double r[], double v[], double a[], double h, int n);
-void vh(double v[], double a[], double h, int n);
+void ac(double a[][2], double r[][2], int n);
+void rh(double r[][2], double v[][2], double a[][2], double h, int n);
+void vh(double v[][2], double a[][2], double h, int n);
 
 
 int main(void)
 {
+    int i;
+    double a[N][2], r[N][2], v[N][2], h;
+    ifstream fichIn;
+    ofstream fichOut;
     //Generamos aleatoriamente las condiciones iniciales
     cond_iniciales(N);
+
     //Aplicamos el algoritmo de Verlet
-    
+    fichIn.open("pos-vel_iniciales.txt");
+    while(!fichIn.eof())
+    {
+        if(!fichIn.is_open())
+            cout << "Error al abrir el fichero";
+        for(i=0;i<N;i++)
+        {
+            fichIn >> r[i][0];
+            fichIn >> r[i][1];
+            fichIn >> v[i][0];
+            fichIn >> v[i][1];
+        }
+    }
+    fichIn.close();
+
+    fichOut.open("particulas_posiciones.txt");
+    h=s;
+    fichOut.precision(6); //Volcamos las posiciones iniciales
+    for(i=0;i<N;i++)
+        fichOut << r[i][0] << ", " << r[i][1] << endl;
+    fichOut << endl;
+
+    while(h<=S)
+    {
+        rh(r,v,a,s,N);
+        vh(v,a,s,N);
+        ac(a,r,N);
+        vh(v,a,s,N);
+
+        for(i=0;i<N;i++)
+            fichOut << r[i][0] << ", " << r[i][1] << endl;
+        fichOut << endl;
+
+        h=h+s;   
+    }
+    fichOut.close();
     
     return 0;
 }
@@ -59,13 +100,35 @@ void cond_iniciales(int n)
     return;
 }
 
-//Función dist: calcula la distancia entre dos puntos del espacio.
+//Función dist: calcula la distancia entre dos puntos de la caja teniendo en cuenta las condiciones de contorno
+//periódicas.
 //Argumentos: x, y; vectores de 2-dim que contienen las coordenadas de cada punto.
 //Retorno: d, distancia al cubo entre los puntos dados
 double dist(double x[], double y[])
 {
-    double d;
-    d=sqrt((x[0]-y[0])*(x[0]-y[0])+(x[1]-y[1])*(x[1]-y[1]));
+    double d,a,b;
+
+    a=abs(x[0]-y[0]); b=abs(x[1]-y[1]);
+    if(a>L/2)
+    {
+        a=L-a;
+        if(x[0]<y[0])
+            x[0]=x[0]+L;
+        else
+            y[0]=y[0]+L;
+    }
+
+    if(b>L/2)
+    {
+        b=L-b;
+        if(x[1]<y[1])
+            x[1]=x[1]+L;
+        else
+            y[1]=y[1]+L;
+    }
+        
+
+    d=sqrt(a*a+b*b);
 
     return d;
 }
@@ -93,8 +156,8 @@ void ac(double a[][2], double r[][2], int n)
             if(d<3) //A distancias largas consideramos la fuerza nula
             {
                 d7=pow(d,7);
-                f[j]=24*(2/(d7*d7)-1/(d7*d));
-                f0=f[j]*(r2[0]-r1[0]);
+                f[j]=24/d7*(2/d7-1/d); //Calculamos el módulo de la fuerza en las unidades dadas
+                f0=f[j]*(r2[0]-r1[0]); //Calculamos el valor de cada componente
                 f1=f[j]*(r2[1]-r1[1]);
 
                 //Calculamos la aceleración proporcionada a la partícula j por la fuerza creada por i
@@ -124,7 +187,18 @@ void rh(double r[][2], double v[][2], double a[][2], double h, int n)
     for (i=0;i<n;i++)
     {
         r[i][0]=r[i][0]+h*v[i][0]+d*a[i][0];
+        //Comprobamos que las partículas no chocan con el borde de la caja
+        while(r[i][0]<0) 
+            r[i][0]=r[i][0]+L;
+        while(r[i][0]>L) 
+            r[i][0]=r[i][0]-L;
+
         r[i][1]=r[i][1]+h*v[i][1]+d*a[i][1];
+        //Comprobamos que las partículas no chocan con el borde de la caja
+        while(r[i][1]<0) 
+            r[i][1]=r[i][1]+L;
+        while(r[i][1]>L) 
+            r[i][1]=r[i][1]-L;
     }
 
     return;
@@ -137,7 +211,7 @@ void rh(double r[][2], double v[][2], double a[][2], double h, int n)
 void vh(double v[][2], double a[][2], double h, int n)
 {
     int i;
-    float d;
+    double d;
 
     d=h/2;
     for (i=0;i<n;i++)
