@@ -17,7 +17,7 @@ using namespace std;
 //Cabecera con todas las funciones que hemos definido
 void cond_iniciales(int n);
 double dist(double x[], double y[]);
-void ac(double a[][2], double r[][2], int n);
+bool ac(double a[][2], double r[][2], int n);
 void rh(double r[][2], double v[][2], double a[][2], double h, int n);
 void vh(double v[][2], double a[][2], double h, int n);
 
@@ -28,6 +28,7 @@ int main(void)
     double a[N][2], r[N][2], v[N][2], h;
     ifstream fichIn;
     ofstream fichOut;
+    bool div;
     //Generamos aleatoriamente las condiciones iniciales
     cond_iniciales(N);
 
@@ -49,19 +50,20 @@ int main(void)
 
     fichOut.open("particulas_posiciones.txt");
     h=s; k=1;
+    div=true;
     fichOut.precision(6); //Volcamos las posiciones iniciales
     for(i=0;i<N;i++)
         fichOut << r[i][0] << ", " << r[i][1] << endl;
     fichOut << endl;
 
-    while(h<=S)
+    while(h<=S && div)
     {
         rh(r,v,a,s,N);
         vh(v,a,s,N);
-        ac(a,r,N);
+        div=ac(a,r,N);
         vh(v,a,s,N);
 
-        if(k%D==0)
+        if(k%D==0) //No pasamos todas las posiciones a la simulación
         {
             for(i=0;i<N;i++)
                 fichOut << r[i][0] << ", " << r[i][1] << endl;
@@ -69,6 +71,9 @@ int main(void)
         }
         h=h+s; k++;
     }
+    if (!div) //Comprobamos que no ha habido errores en los cálculos
+        fichOut << "Error al calcular la aceleración" << endl;
+
     fichOut.close();
     
     return 0;
@@ -140,12 +145,15 @@ double dist(double x[], double y[])
 //del potencial de Lennard-Jones.
 //Argumentos: a,r; matrices de aceleración y posición de cada partícula en el instante considerado, respect.;
 //n, número de partículas del sistema
-void ac(double a[][2], double r[][2], int n)
+//Retorno: verdadero si la distancia (denominador) no es nulo, falso en caso contrario
+bool ac(double a[][2], double r[][2], int n)
 {
     double f[N], d, d7, r1[2], r2[2], f0, f1;
     int i,j;
+    bool div;
 
     f[0]=0.0; //Un cuerpo no ejerce fuerza sobre sí mismo
+    div=true;
     for(i=0;i<n;i++) 
         a[i][0]=a[i][1]=0.0; //Inicializamos las sumas a 0
 
@@ -156,7 +164,13 @@ void ac(double a[][2], double r[][2], int n)
         {
             r2[0]=r[j][0]; r2[1]=r[j][1];
             d=dist(r1,r2);
-            if(d<3) //A distancias largas consideramos la fuerza nula
+            if(d<1e-15) //Comprobamos que no dividimos entre 0
+            {
+                a[i][0]=a[i][1]=0.0;
+                j=n;
+                div=false;
+            }
+            else if(d<3) //A distancias largas consideramos la fuerza nula
             {
                 d7=pow(d,7);
                 f[j]=24/d7*(2/d7-1/d); //Calculamos el módulo de la fuerza en las unidades dadas
@@ -174,7 +188,7 @@ void ac(double a[][2], double r[][2], int n)
         }
     }
 
-    return;
+    return div;
 }
 
 //Función rh: calcula las posiciones en un instante h posterior a partir del desarrollo en serie
