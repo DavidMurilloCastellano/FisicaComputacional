@@ -8,11 +8,11 @@
 using namespace std;
 
 #define Pi 3.14159265358979 //Valor del número Pi
-#define N 5 //Número de átomos que conforman nuestro sistema
+#define N 20 //Número de átomos que conforman nuestro sistema
 #define L 10 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada considerada
 #define s 0.002 //Paso con el que se aplica el algoritmo
-#define S 4 //Límite de tiempo hasta el que se considera la simulación
-#define D 4 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
+#define S 0.1 //Límite de tiempo hasta el que se considera la simulación
+#define D 1 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
 
 //Cabecera con todas las funciones que hemos definido
 void cond_iniciales(int n);
@@ -30,9 +30,9 @@ int main(void)
     ofstream fichOut;
     bool div;
     //Generamos aleatoriamente las condiciones iniciales
-    cond_iniciales(N);
+    //cond_iniciales(N);
 
-    //Aplicamos el algoritmo de Verlet
+    //Copiamos las velocidades y posiciones iniciales aleatorias
     fichIn.open("pos-vel_iniciales.txt");
     while(!fichIn.eof())
     {
@@ -47,15 +47,17 @@ int main(void)
         }
     }
     fichIn.close();
+    //Calculamos las aceleraciones iniciales
+    div=ac(a,r,N);
 
     fichOut.open("particulas_posiciones.txt");
     h=s; k=1;
-    div=true;
     fichOut.precision(6); //Volcamos las posiciones iniciales
     for(i=0;i<N;i++)
         fichOut << r[i][0] << ", " << r[i][1] << endl;
     fichOut << endl;
 
+    //Aplicamos el algoritmo de Verlet
     while(h<=S && div)
     {
         rh(r,v,a,s,N);
