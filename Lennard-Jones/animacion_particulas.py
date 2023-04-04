@@ -48,7 +48,7 @@ import numpy as np
 # Parámetros
 # ========================================
 file_in = "particulas_posiciones.txt" # Nombre del fichero de datos CAMBIAR
-file_out = "particulas-5" # Nombre del fichero de salida (sin extensión)
+file_out = "particulas-20" # Nombre del fichero de salida (sin extensión)
 
 # Límites de los ejes X e Y.
 x_min = 0
@@ -56,10 +56,10 @@ x_max = 10
 y_min = 0
 y_max = 10
 
-interval = 100 # Tiempo entre fotogramas en milisegundos
+interval = 30 # Tiempo entre fotogramas en milisegundos
 show_trail = False # Muestra la "estela" del planeta
 trail_width = 1 # Ancho de la estela
-save_to_file = False # False: muestra la animación por pantalla,
+save_to_file = True # False: muestra la animación por pantalla,
                      # True: la guarda en un fichero 
                      # (CAMBIARLO CUANDO SE TENGA LA DEFINITIVA)
 dpi = 150 # Calidad del vídeo de salida (dots per inch)

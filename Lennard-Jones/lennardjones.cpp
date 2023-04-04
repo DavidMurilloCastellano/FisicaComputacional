@@ -77,7 +77,7 @@ int main(void)
         fichOut << "Error al calcular la aceleración" << endl;
 
     fichOut.close();
-    
+
     return 0;
 }
 
@@ -166,7 +166,7 @@ bool ac(double a[][2], double r[][2], int n)
         {
             r2[0]=r[j][0]; r2[1]=r[j][1];
             d=dist(r1,r2);
-            if(d<1e-15) //Comprobamos que no dividimos entre 0
+            if(d<1e-18) //Comprobamos que no dividimos entre 0
             {
                 a[i][0]=a[i][1]=0.0;
                 j=n;
@@ -198,7 +198,7 @@ bool ac(double a[][2], double r[][2], int n)
 //h, paso; n, número de cuerpos
 void rh(double r[][2], double v[][2], double a[][2], double h, int n)
 {
-    int i;
+    int i,k;
     double d;
 
     d=h*h/2; //Calculamos las constantes fuera del bucle por optimización
@@ -206,17 +206,13 @@ void rh(double r[][2], double v[][2], double a[][2], double h, int n)
     {
         r[i][0]=r[i][0]+h*v[i][0]+d*a[i][0];
         //Comprobamos que las partículas no chocan con el borde de la caja
-        while(r[i][0]<0) 
-            r[i][0]=r[i][0]+L;
-        while(r[i][0]>L) 
-            r[i][0]=r[i][0]-L;
+        if(r[i][0]<0 || r[i][0]>L)
+            r[i][0]=r[i][0]-floor(r[i][0]/L)*L;
 
         r[i][1]=r[i][1]+h*v[i][1]+d*a[i][1];
         //Comprobamos que las partículas no chocan con el borde de la caja
-        while(r[i][1]<0) 
-            r[i][1]=r[i][1]+L;
-        while(r[i][1]>L) 
-            r[i][1]=r[i][1]-L;
+        if(r[i][1]<0 || r[i][1]>L)
+            r[i][1]=r[i][1]-floor(r[i][1]/L)*L;
     }
 
     return;
