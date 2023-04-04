@@ -11,8 +11,9 @@ using namespace std;
 #define N 20 //Número de átomos que conforman nuestro sistema
 #define L 10 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada considerada
 #define s 2e-4 //Paso con el que se aplica el algoritmo
-#define S 2 //Límite de tiempo hasta el que se considera la simulación
-#define D 4 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
+#define S 5 //Límite de tiempo hasta el que se considera la simulación
+#define D 1 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
+#define R 1e-3 //Separación mínimia inicial entre cada par de partículas
 
 //Cabecera con todas las funciones que hemos definido
 void cond_iniciales(int n);
@@ -96,8 +97,8 @@ int main(void)
 //Argumentos: n, número de partículas
 void cond_iniciales(int n)
 {
-    int i;
-    double v,p,l;
+    int i,j,k;
+    double v,p,l,r[N][2],r1[2],r2[2];
     ofstream fichOut;
 
     v=0.0;
@@ -110,8 +111,34 @@ void cond_iniciales(int n)
     //Generamos las posiciones y velocidades aleatorias
     for(i=0;i<n;i++)
     {
-        v=rand()*p;
-        fichOut << rand()*l << " " << rand()*l << " " << cos(v) << " " << sin(v) << endl; 
+        r1[0]=rand()*l; r1[1]=rand()*l;
+        r[i][0]=r1[0]; r[i][1]=r1[1];
+        //Comprobamos que las partículas no parten de posiciones demasiado próximas
+        k=0; //Para que no genere infinitos números aleatorios
+        for(j=0;j<i;j++)
+        {
+            r2[0]=r[j][0]; r2[1]=r[j][1];
+            while(dist(r1,r2)<R && k<1000)
+            {
+                r1[0]=rand()*l; r1[1]=rand()*l;
+                r[i][0]=r1[0]; r[i][1]=r1[1];
+                k++;
+                j=0;
+            }
+        }
+        
+        if(k==1000)
+        {
+            fichOut << "No se generaron partículas suficientemente separadas" << endl;
+            i=n;
+        }
+
+        else
+        {
+            v=rand()*p;
+            fichOut << r[i][0] << " " << r[i][1] << " " << cos(v) << " " << sin(v) << endl; 
+        }   
+        
     }
 
     fichOut.close();    
@@ -214,15 +241,19 @@ void rh(double r[][2], double v[][2], double a[][2], double h, int n)
     {
         r[i][0]=r[i][0]+h*v[i][0]+d*a[i][0];
         //Comprobamos que las partículas no chocan con el borde de la caja
-        if(r[i][0]<0 || r[i][0]>L)
-            r[i][0]=r[i][0]-floor(r[i][0]/L)*L;
+        if(r[i][0]<0)
+            r[i][0]=r[i][0]+L;
+        if(r[i][0]>L)
+            r[i][0]=r[i][0]-L;
 
         r[i][1]=r[i][1]+h*v[i][1]+d*a[i][1];
         //Comprobamos que las partículas no chocan con el borde de la caja
-        if(r[i][1]<0 || r[i][1]>L)
-            r[i][1]=r[i][1]-floor(r[i][1]/L)*L;
+        if(r[i][1]<0)
+            r[i][1]=r[i][1]+L;
+        if(r[i][1]>L)
+            r[i][1]=r[i][1]-L;
     }
-
+    //r[i][0]=r[i][0]-floor(r[i][0]/L)*L;
     return;
 }
 
