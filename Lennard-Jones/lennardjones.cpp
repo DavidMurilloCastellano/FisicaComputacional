@@ -10,9 +10,9 @@ using namespace std;
 #define Pi 3.14159265358979 //Valor del número Pi
 #define N 20 //Número de átomos que conforman nuestro sistema
 #define L 10 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada considerada
-#define s 0.002 //Paso con el que se aplica el algoritmo
-#define S 0.1 //Límite de tiempo hasta el que se considera la simulación
-#define D 1 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
+#define s 2e-4 //Paso con el que se aplica el algoritmo
+#define S 2 //Límite de tiempo hasta el que se considera la simulación
+#define D 4 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
 
 //Cabecera con todas las funciones que hemos definido
 void cond_iniciales(int n);
@@ -34,47 +34,55 @@ int main(void)
 
     //Copiamos las velocidades y posiciones iniciales aleatorias
     fichIn.open("pos-vel_iniciales.txt");
-    while(!fichIn.eof())
+    i=0;
+    while(!fichIn.eof() && i<N)
     {
         if(!fichIn.is_open())
             cout << "Error al abrir el fichero";
-        for(i=0;i<N;i++)
-        {
-            fichIn >> r[i][0];
-            fichIn >> r[i][1];
-            fichIn >> v[i][0];
-            fichIn >> v[i][1];
-        }
+
+        fichIn >> r[i][0];
+        fichIn >> r[i][1];
+        fichIn >> v[i][0];
+        fichIn >> v[i][1];
+        i++;
     }
     fichIn.close();
-    //Calculamos las aceleraciones iniciales
-    div=ac(a,r,N);
 
     fichOut.open("particulas_posiciones.txt");
-    h=s; k=1;
-    fichOut.precision(6); //Volcamos las posiciones iniciales
-    for(i=0;i<N;i++)
-        fichOut << r[i][0] << ", " << r[i][1] << endl;
-    fichOut << endl;
-
-    //Aplicamos el algoritmo de Verlet
-    while(h<=S && div)
+    //Comprobamos que el número de partículas coincide con la cantidad de datos leídos
+    if(i!=N)
+        fichOut << "El número de partículas indicado no coincide con la cantidad de datos iniciales." << endl;
+    else
     {
-        rh(r,v,a,s,N);
-        vh(v,a,s,N);
-        div=ac(a,r,N);
-        vh(v,a,s,N);
+        h=s; k=1;
+        fichOut.precision(6); //Volcamos las posiciones iniciales
+        for(i=0;i<N;i++)
+            fichOut << r[i][0] << ", " << r[i][1] << endl;
+        fichOut << endl;
 
-        if(k%D==0) //No pasamos todas las posiciones a la simulación
+        //Calculamos las aceleraciones iniciales
+        div=ac(a,r,N);
+
+        //Aplicamos el algoritmo de Verlet
+        while(h<=S && div)
         {
-            for(i=0;i<N;i++)
-                fichOut << r[i][0] << ", " << r[i][1] << endl;
-            fichOut << endl;
+            rh(r,v,a,s,N);
+            vh(v,a,s,N);
+            div=ac(a,r,N);
+            vh(v,a,s,N);
+
+            if(k%D==0) //No pasamos todas las posiciones a la simulación
+            {
+                for(i=0;i<N;i++)
+                    fichOut << r[i][0] << ", " << r[i][1] << endl;
+                fichOut << endl;
+            }
+            h=h+s; k++;
         }
-        h=h+s; k++;
-    }
-    if (!div) //Comprobamos que no ha habido errores en los cálculos
-        fichOut << "Error al calcular la aceleración" << endl;
+
+        if (!div) //Comprobamos que no ha habido errores en los cálculos
+            fichOut << "Error al calcular la aceleración" << endl;
+        }    
 
     fichOut.close();
 
