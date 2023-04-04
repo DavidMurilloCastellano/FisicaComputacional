@@ -30,7 +30,7 @@ int main(void)
     ofstream fichOut;
     bool div;
     //Generamos aleatoriamente las condiciones iniciales
-    //cond_iniciales(N);
+    cond_iniciales(N);
 
     //Copiamos las velocidades y posiciones iniciales aleatorias
     fichIn.open("pos-vel_iniciales.txt");
