@@ -10,28 +10,29 @@ using namespace std;
 #define Pi 3.14159265358979 //Valor del número Pi
 #define N 20 //Número de átomos que conforman nuestro sistema
 #define L 10 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada considerada
-#define s 2e-4 //Paso con el que se aplica el algoritmo
+#define s 2e-3 //Paso con el que se aplica el algoritmo
 #define S 5 //Límite de tiempo hasta el que se considera la simulación
-#define D 1 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
+#define D 4 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
 #define R 1e-3 //Separación mínimia inicial entre cada par de partículas
+#define E true //Indica si se desea calcular o no la energía del sistema
 
 //Cabecera con todas las funciones que hemos definido
 void cond_iniciales(int n);
 double dist(double x[], double y[]);
-bool ac(double a[][2], double r[][2], int n);
+bool ac(double a[][2], double r[][2], int n, double& V);
 void rh(double r[][2], double v[][2], double a[][2], double h, int n);
 void vh(double v[][2], double a[][2], double h, int n);
 
 
 int main(void)
 {
-    int i,k;
-    double a[N][2], r[N][2], v[N][2], h;
+    int i,j,k;
+    double a[N][2], r[N][2], v[N][2], h, T, V;
     ifstream fichIn;
-    ofstream fichOut;
+    ofstream fichOPos, fichOE;
     bool div;
     //Generamos aleatoriamente las condiciones iniciales
-    cond_iniciales(N);
+    //cond_iniciales(N);
 
     //Copiamos las velocidades y posiciones iniciales aleatorias
     fichIn.open("pos-vel_iniciales.txt");
@@ -49,43 +50,66 @@ int main(void)
     }
     fichIn.close();
 
-    fichOut.open("particulas_posiciones.txt");
+    fichOPos.open("particulas_posiciones.txt");
+    fichOE.open("particulas_energias.txt");
     //Comprobamos que el número de partículas coincide con la cantidad de datos leídos
     if(i!=N)
-        fichOut << "El número de partículas indicado no coincide con la cantidad de datos iniciales." << endl;
+        fichOPos << "El número de partículas indicado no coincide con la cantidad de datos iniciales." << endl;
     else
     {
         h=s; k=1;
-        fichOut.precision(6); //Volcamos las posiciones iniciales
+        fichOPos.precision(6); 
+        T=V=0.0;
+        //Volcamos las posiciones iniciales
         for(i=0;i<N;i++)
-            fichOut << r[i][0] << ", " << r[i][1] << endl;
-        fichOut << endl;
+        {
+            fichOPos << r[i][0] << ", " << r[i][1] << endl;
 
-        //Calculamos las aceleraciones iniciales
-        div=ac(a,r,N);
+            //Calculamos la energía cinética inicial
+            if(E)
+                T=T+(v[i][0]*v[i][0]+v[i][1]*v[i][1])/2;
+        }
+        fichOPos << endl;
+        fichOE << T << " ";
+
+        //Calculamos las aceleraciones (y energía potencial) iniciales
+        div=ac(a,r,N,V);
+        if(E)
+            fichOE << V << " " << T+V <<endl;
 
         //Aplicamos el algoritmo de Verlet
         while(h<=S && div)
         {
             rh(r,v,a,s,N);
             vh(v,a,s,N);
-            div=ac(a,r,N);
+            div=ac(a,r,N,V);
             vh(v,a,s,N);
 
             if(k%D==0) //No pasamos todas las posiciones a la simulación
             {
                 for(i=0;i<N;i++)
-                    fichOut << r[i][0] << ", " << r[i][1] << endl;
-                fichOut << endl;
+                    fichOPos << r[i][0] << ", " << r[i][1] << endl;
+                fichOPos << endl;
             }
+
+            //Escribimos las energías
+            if(E)
+            {
+                T=0.0;
+                for(i=0;i<N;i++)
+                    T=T+(v[i][0]*v[i][0]+v[i][1]*v[i][1])/2;
+                fichOE << T << " " << V << " " << T+V << endl;
+            }
+                
             h=h+s; k++;
         }
 
         if (!div) //Comprobamos que no ha habido errores en los cálculos
-            fichOut << "Error al calcular la aceleración" << endl;
+            fichOPos << "Error al calcular la aceleración" << endl;
         }    
 
-    fichOut.close();
+    fichOPos.close();
+    fichOE.close();
 
     return 0;
 }
@@ -179,18 +203,20 @@ double dist(double x[], double y[])
 }
 
 //Función ac: calcula la aceleración a la que está sometida cada partícula en un instante determinado a partir
-//del potencial de Lennard-Jones.
+//del potencial de Lennard-Jones. Para optimizar, calcula también la energía potencial del sistema
 //Argumentos: a,r; matrices de aceleración y posición de cada partícula en el instante considerado, respect.;
-//n, número de partículas del sistema
+//n, número de partículas del sistema; E, indica si se quiere calcular la energía potencial; V; energía potencial
+//del sistema.
 //Retorno: verdadero si la distancia (denominador) no es nulo, falso en caso contrario
-bool ac(double a[][2], double r[][2], int n)
+bool ac(double a[][2], double r[][2], int n, double& V)
 {
-    double f[N], d, d7, r1[2], r2[2], f0, f1;
+    double f[N], d, d6, d7, r1[2], r2[2], f0, f1;
     int i,j;
     bool div;
 
     f[0]=0.0; //Un cuerpo no ejerce fuerza sobre sí mismo
     div=true;
+    V=0.0;
     for(i=0;i<n;i++) 
         a[i][0]=a[i][1]=0.0; //Inicializamos las sumas a 0
 
@@ -209,7 +235,7 @@ bool ac(double a[][2], double r[][2], int n)
             }
             else if(d<3) //A distancias largas consideramos la fuerza nula
             {
-                d7=pow(d,7);
+                d6=pow(d,6); d7=d6*d;
                 f[j]=24/d7*(2/d7-1/d); //Calculamos el módulo de la fuerza en las unidades dadas
                 f0=f[j]*(r2[0]-r1[0]); //Calculamos el valor de cada componente
                 f1=f[j]*(r2[1]-r1[1]);
@@ -221,6 +247,10 @@ bool ac(double a[][2], double r[][2], int n)
                 //Aplicamos la 3ª ley de Newton para calcular la fuerza experimentada por la partícula i
                 a[i][0]=a[i][0]-f0;
                 a[i][1]=a[i][1]-f1; 
+
+                //Calculamos la energía potencial
+                if(E)
+                    V=V+4/d6*(1/d6-1);
             }
         }
     }
