@@ -10,9 +10,9 @@ using namespace std;
 #define Pi 3.14159265358979 //Valor del número Pi
 #define N 20 //Número de átomos que conforman nuestro sistema
 #define L 10 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada considerada
-#define s 2e-3 //Paso con el que se aplica el algoritmo
-#define S 5 //Límite de tiempo hasta el que se considera la simulación
-#define D 4 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
+#define s 2e-4 //Paso con el que se aplica el algoritmo
+#define S 50 //Límite de tiempo hasta el que se considera la simulación
+#define D 10 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
 #define R 1e-3 //Separación mínimia inicial entre cada par de partículas
 #define E true //Indica si se desea calcular o no la energía del sistema
 
@@ -22,6 +22,7 @@ double dist(double x[], double y[]);
 bool ac(double a[][2], double r[][2], int n, double& V);
 void rh(double r[][2], double v[][2], double a[][2], double h, int n);
 void vh(double v[][2], double a[][2], double h, int n);
+double temp(float a, float b,int n);
 
 
 int main(void)
@@ -33,7 +34,7 @@ int main(void)
     bool div;
     //Generamos aleatoriamente las condiciones iniciales
     //cond_iniciales(N);
-
+/*
     //Copiamos las velocidades y posiciones iniciales aleatorias
     fichIn.open("pos-vel_iniciales.txt");
     i=0;
@@ -70,7 +71,7 @@ int main(void)
                 T=T+(v[i][0]*v[i][0]+v[i][1]*v[i][1])/2;
         }
         fichOPos << endl;
-        fichOE << T << " ";
+        fichOE << "0.0000 " << T << " ";
 
         //Calculamos las aceleraciones (y energía potencial) iniciales
         div=ac(a,r,N,V);
@@ -90,26 +91,30 @@ int main(void)
                 for(i=0;i<N;i++)
                     fichOPos << r[i][0] << ", " << r[i][1] << endl;
                 fichOPos << endl;
+
+                //Escribimos las energías
+                if(E)
+                {
+                    T=0.0;
+                    for(i=0;i<N;i++)
+                        T=T+(v[i][0]*v[i][0]+v[i][1]*v[i][1])/2;
+                    fichOE << h << " " << T << " " << V << " " << T+V << endl;
+                }
             }
 
-            //Escribimos las energías
-            if(E)
-            {
-                T=0.0;
-                for(i=0;i<N;i++)
-                    T=T+(v[i][0]*v[i][0]+v[i][1]*v[i][1])/2;
-                fichOE << T << " " << V << " " << T+V << endl;
-            }
-                
             h=h+s; k++;
         }
 
         if (!div) //Comprobamos que no ha habido errores en los cálculos
             fichOPos << "Error al calcular la aceleración" << endl;
-        }    
+
+    }    
 
     fichOPos.close();
     fichOE.close();
+*/
+    //Calculamos la temperatura en el intervalo especificado en el guion
+    cout << temp(20,50,N);
 
     return 0;
 }
@@ -304,4 +309,43 @@ void vh(double v[][2], double a[][2], double h, int n)
     }
 
     return;
+}
+
+//Función temp: calcula la temperatura media del sistema en un intervalo de tiempo. Para ello, lee los datos de
+//energía cinética del sistema del fichero "particulas_energias.txt"
+//Argumentos: a,b, extremos del intervalo en el que se calcula la temperatura; n, número de partículas del sistema; 
+//Retorno:t, temperatura media del sistema
+double temp(float a, float b,int n)
+{
+    double t,aux,h;
+    int i;
+    ifstream fichIn;
+
+    t=0.0;
+    fichIn.open("particulas_energias.txt");
+
+    if(a>=0 && b<=S && a<b) //Se comprueba que los límites están dentro del rango de tiempo calculado
+    {
+        if(!fichIn.is_open())
+            t=0.0;
+        else
+        {
+            fichIn >> h;
+            while(h<a)
+                for(i=0;i<4;i++) //Descartamos los datos que no nos interesan
+                    fichIn >> h;
+            while(h<=b)
+            {
+                fichIn >> aux;
+                for(i=0;i<3;i++) //Descartamos los datos que no nos interesan
+                    fichIn >> h;
+                t=t+aux;
+            }
+            t=t/(n*(b-a));
+        }
+    }
+    
+    fichIn.close();
+
+    return t;
 }
