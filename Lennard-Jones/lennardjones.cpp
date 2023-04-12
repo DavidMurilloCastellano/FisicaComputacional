@@ -10,10 +10,10 @@ using namespace std;
 #define Pi 3.14159265358979 //Valor del número Pi
 #define N 20 //Número de átomos que conforman nuestro sistema
 #define L 10 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada considerada
-#define s 2e-4 //Paso con el que se aplica el algoritmo
+#define s 2e-3 //Paso con el que se aplica el algoritmo
 #define S 50 //Límite de tiempo hasta el que se considera la simulación
-#define D 10 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
-#define R 1e-3 //Separación mínimia inicial entre cada par de partículas
+#define D 2 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
+#define R 1e-2 //Separación mínimia inicial entre cada par de partículas
 #define E true //Indica si se desea calcular o no la energía del sistema
 
 //Cabecera con todas las funciones que hemos definido
@@ -34,7 +34,7 @@ int main(void)
     bool div;
     //Generamos aleatoriamente las condiciones iniciales
     //cond_iniciales(N);
-/*
+
     //Copiamos las velocidades y posiciones iniciales aleatorias
     fichIn.open("pos-vel_iniciales.txt");
     i=0;
@@ -112,7 +112,7 @@ int main(void)
 
     fichOPos.close();
     fichOE.close();
-*/
+
     //Calculamos la temperatura en el intervalo especificado en el guion
     cout << temp(20,50,N);
 
@@ -206,6 +206,8 @@ double dist(double x[], double y[])
 
     return d;
 }
+
+//Función modulo: devuelve el modulo de un 
 
 //Función ac: calcula la aceleración a la que está sometida cada partícula en un instante determinado a partir
 //del potencial de Lennard-Jones. Para optimizar, calcula también la energía potencial del sistema
@@ -341,7 +343,8 @@ double temp(float a, float b,int n)
                     fichIn >> h;
                 t=t+aux;
             }
-            t=t/(n*(b-a));
+            t=t/(n*(floor((b-a)/(s*D))+1)); //Promediamos en el número de partículas y tiempo (iteraciones calculadas
+                                            //en [a,b]) 
         }
     }
     
