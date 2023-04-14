@@ -1,6 +1,6 @@
 # include <stdio.h>
 # include <math.h>
-# include "gsl_rng.h" //Libreria para generación de números aleatorios
+# include <gsl/gsl_rng.h> //Libreria para generación de números aleatorios
 
 gsl_rng *tau;
 

@@ -6,10 +6,10 @@
 #include <cstdlib>
 using namespace std;
 
-#define rng false //Indica si la configuración inicial es aleatoria (true) u ordenada (false)
-#define N 20 //Número de nodos del sistema en cada eje
+#define rng true //Indica si la configuración inicial es aleatoria (true) u ordenada (false)
+#define N 100 //Número de nodos del sistema en cada eje
 #define pMC 100 //Número de pasos de Monte-Carlo que se dan
-#define T 0.011 //Temperatura del sistema
+#define T 1e-4 //Temperatura del sistema
 
 //Cabecera con todas las funciones que hemos definido
 void conf_aleat(bool A[][N], int n);
