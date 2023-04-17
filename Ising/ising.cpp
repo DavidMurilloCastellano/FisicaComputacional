@@ -7,9 +7,9 @@
 using namespace std;
 
 #define rng false //Indica si la configuración inicial es aleatoria (true) u ordenada (false)
-#define N 16 //Número de nodos del sistema en cada eje
-#define pMC 1e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
-#define T 1.5 //Temperatura del sistema
+#define N 128 //Número de nodos del sistema en cada eje
+#define pMC 100 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
+#define T 4.5 //Temperatura del sistema
 
 //Cabecera con todas las funciones que hemos definido
 void conf_aleat(bool A[][N], int n);
@@ -39,7 +39,7 @@ int main (void)
     mag=E=E2=0.0;
     fichODat.open("ising_data.dat");
     fichOMag.open("ising_magnitudes.txt");
-    for(i1=0;i1<100;i1++)
+    for(i1=0;i1<1;i1++)
     {
         for(i2=0;i2<pMC;i2++)
         {
@@ -57,25 +57,26 @@ int main (void)
             {
                 n=rand()%N; m=rand()%N;
                 p=exp(((-1.0)*DEnergia(A,n,m))/T);
-                if(p>1 || rand()/RAND_MAX<p)
+                if(p>1 || (rand()*1.0)/RAND_MAX<p)
                     if(A[n][m])
                         A[n][m]=false;
                     else
                         A[n][m]=true;
             }
-
+/*
             //Calculamos las sumas que nos permitan hallar los promedios luego
             mag=mag+magn(A);
             e=energia(A); E=E+e; E2=E2+e*e;
+*/
         }
-
+/*
         //Cálculo de los promedios de todas las magnitudes de interés
         mag=mag/(M*pMC);
         cN=(E2-(E*E)/pMC)/(4*M*T*pMC);
         E=E/(4*N);
                 
         //Pasar al fichero, ¿CÁLCULO VARIANZAS? ¿NECESITO cN?
-
+*/
     }
     fichODat.close();
     fichOMag.close();
