@@ -16,24 +16,46 @@ using namespace std;
 void potencial(double V[], double k);
 void onda_inicial(complex<double> phi0[], double k, double mu, double sigma2);
 void inic_alpha(complex<double> a[], double s, double V[]);
+void inic_beta(complex<double> b[], double s, double V[], complex<double> phi[], complex<double> a[]);
+void chi(complex<double> x[],complex<double> a[],complex<double> b[]);
+void funcion_onda (complex<double> x[], complex<double> phi0[], complex<double> phi[]);
+void nuevo_ciclo(complex<double> phi0[], complex<double> phi[]);
 
 int main (void)
 {
-    double k,s,V[N+1],mu,sigma2;
-    int i,j;
-    complex<double> phi0[N+1], a[N], b[N];
+    double k,s,V[N+1],mu,sigma2,h;
+    int i,j,n,l;
+    complex<double> phi0[N+1], a[N], b[N], x[N+1], phi[N+1];
+    ofstream fichOut;
 
     //Calculamos las constantes necesarias a partir de las fijadas
+    fichOut.open("schrodinger_data.dat");
     k=2*pi*nC/N;
     s=1.0/(4*k*k);
     potencial(V,k); //Valor del potencial en cada punto de la red discretizada
     mu=N/4.0; sigma2=N*N/256.0; //Valores indicados en el guion en unidades de h
     onda_inicial(phi0,k,mu,sigma2); //Inicializamos el valor de la función de onda en cada punto
-    inic_alpha(a,s,V);
+    inic_alpha(a,s,V); //Calculamos los parámetros alpha
 
-    //alpha();
+    //Representamos la norma en cada nodo del eje
+    for(l=0;l<=N;l++)
+        fichOut << l << ", " << abs(phi0[l]) << endl;
+    fichOut << endl;
 
-    //Ej
+    //Comenzamos con el bucle temporal
+    for(n=1;n<=T;n++)
+    {
+        inic_beta(b,s,V,phi0,a); //Calculamos los parámetros beta
+        chi(x,a,b); //Calculamos los parámetros chi
+        funcion_onda(x,phi0,phi); //Calculamos el nuevo valor de la función de onda en cada punto
+        nuevo_ciclo(phi0,phi); //Copiamos el nuevo vector en el del instante previo
+
+        //Representamos la norma (normalizada) en cada nodo del eje
+        for(l=0;l<=N;l++)
+            fichOut << l << ", " << abs(phi0[l]) << endl; //NORMALIZAR
+        fichOut << endl;
+    }
+    fichOut.close();
 
     return 0;
 }
@@ -91,7 +113,60 @@ void inic_alpha(complex<double> a[], double s, double V[])
 
     a[N-1]=0.0;
     for(j=N-1;j>=1;j--)
-        a[j-1]=-1.0/(-2+2/s*1i-V[j]+a[j]);
+        a[j-1]=-1.0/(-2.+2/s*1i-V[j]+a[j]);
+
+    return;
+}
+
+//Función inic_beta: calcula los valores de los parámetros beta necesarios para los cálculos
+//Argumentos: b[], vector donde se guardan los coeficientes; s, parámetro normalizado de discretización del
+//tiempo; V, vector con el valor del potencial en cada punto; phi[], vector con los valores de la función de onda
+//en cada punto; a[], vector con los parámetros alpha
+void inic_beta(complex<double> b[], double s, double V[], complex<double> phi[], complex<double> a[])
+{
+    int j;
+
+    b[N-1]=0.0;
+    for(j=N-1;j>=1;j--)
+        b[j-1]=(4/s*phi[j]*1i-b[j])/(-2.+2/s*1i-V[j]+a[j]);
+
+    return;
+}
+
+//Función chi: calcula el valor de los parámetros chi en cada punto
+//Argumentos: a[], b[], vectores con los parámetros alpha y beta; x[], vector donde se guardan los resultados
+void chi(complex<double> x[],complex<double> a[],complex<double> b[])
+{
+    int j;
+
+    x[0]=x[N]=0.0;
+    for(j=0;j<=N-2;j++)
+        x[j+1]=a[j]*x[j]+b[j];
+
+    return;
+}
+
+//Función funcion_onda: calcula la función de onda a partir de la recurrencia indicada en el guion
+//Argumentos: x[], vector con las componentes de chi; phi0[], función de onda del instante previo;
+//phi[], nueva función de onda
+void funcion_onda (complex<double> x[], complex<double> phi0[], complex<double> phi[])
+{
+    int j;
+
+    for(j=0;j<=N;j++)
+        phi[j]=x[j]-phi0[j];
+
+    return;
+}
+
+//Función nuevo_ciclo: copia el valor de la nueva función de onda en el vector previo
+//Argumentos: phi0[], función de onda instante previo; phi[], función de onda nuevo instante
+void nuevo_ciclo(complex<double> phi0[], complex<double> phi[])
+{
+    int j;
+
+    for(j=0;j<=N;j++)
+        phi0[j]=phi[j];
 
     return;
 }
