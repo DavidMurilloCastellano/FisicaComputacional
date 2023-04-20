@@ -23,13 +23,14 @@ void nuevo_ciclo(complex<double> phi0[], complex<double> phi[]);
 
 int main (void)
 {
-    double k,s,V[N+1],mu,sigma2,h;
+    double k,s,V[N+1],mu,sigma2,aux,sum, norma;
     int i,j,n,l;
     complex<double> phi0[N+1], a[N], b[N], x[N+1], phi[N+1];
-    ofstream fichOut;
+    ofstream fichODat, fichONorm;
 
     //Calculamos las constantes necesarias a partir de las fijadas
-    fichOut.open("schrodinger_data.dat");
+    fichODat.open("schrodinger_data.dat");
+    fichONorm.open("norma.txt");
     k=2*pi*nC/N;
     s=1.0/(4*k*k);
     potencial(V,k); //Valor del potencial en cada punto de la red discretizada
@@ -37,10 +38,23 @@ int main (void)
     onda_inicial(phi0,k,mu,sigma2); //Inicializamos el valor de la función de onda en cada punto
     inic_alpha(a,s,V); //Calculamos los parámetros alpha
 
-    //Representamos la norma en cada nodo del eje
-    for(l=0;l<=N;l++)
-        fichOut << l << ", " << abs(phi0[l]) << endl;
-    fichOut << endl;
+    //Representamos la norma en cada nodo del eje y calculamos la norma total integrando por el método del trapecio
+    aux=norm(phi0[0]);
+    sum=aux;
+    fichODat << 0 << ", " << aux << endl;
+    for(l=1;l<N;l++)
+    {
+        aux=norm(phi0[l]);
+        sum=sum+2*aux;
+        fichODat << l << ", " << aux << endl;
+    }
+    aux=norm(phi0[N]);
+    sum=sum+aux;
+    fichODat << N << ", " << aux << endl;
+        
+    fichODat << endl;
+    norma=sum/2; //Copiamos el valor de la integral en el instante inicial para normalizar
+    fichONorm << 0 << ", " << 1 << endl;
 
     //Comenzamos con el bucle temporal
     for(n=1;n<=T;n++)
@@ -50,12 +64,25 @@ int main (void)
         funcion_onda(x,phi0,phi); //Calculamos el nuevo valor de la función de onda en cada punto
         nuevo_ciclo(phi0,phi); //Copiamos el nuevo vector en el del instante previo
 
-        //Representamos la norma (normalizada) en cada nodo del eje
-        for(l=0;l<=N;l++)
-            fichOut << l << ", " << abs(phi0[l]) << endl; //NORMALIZAR
-        fichOut << endl;
+        //Representamos la norma (normalizada) en cada nodo del eje y calculamos la norma total
+        aux=norm(phi0[0]);
+        sum=aux;
+        fichODat << 0 << ", " << aux << endl;
+        for(l=1;l<N;l++)
+        {
+            aux=norm(phi0[l]);
+            sum=sum+2*aux;
+            fichODat << l << ", " << aux << endl;
+        }
+        aux=norm(phi0[N]);
+        sum=sum+aux;
+        fichODat << N << ", " << aux << endl;
+            
+        fichODat << endl;
+        fichONorm << n << ", " << sum/(2*norma) << endl;
     }
-    fichOut.close();
+    fichODat.close();
+    fichONorm.close();
 
     return 0;
 }
@@ -137,10 +164,11 @@ void inic_beta(complex<double> b[], double s, double V[], complex<double> phi[],
 //Argumentos: a[], b[], vectores con los parámetros alpha y beta; x[], vector donde se guardan los resultados
 void chi(complex<double> x[],complex<double> a[],complex<double> b[])
 {
-    int j;
+    int j,n;
 
     x[0]=x[N]=0.0;
-    for(j=0;j<=N-2;j++)
+    n=N-2;
+    for(j=0;j<=n;j++)
         x[j+1]=a[j]*x[j]+b[j];
 
     return;
