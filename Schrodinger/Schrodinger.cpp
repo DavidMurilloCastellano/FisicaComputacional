@@ -15,12 +15,13 @@ using namespace std;
 //Cabecera con todas las funciones que hemos definido
 void potencial(double V[], double k);
 void onda_inicial(complex<double> phi0[], double k, double mu, double sigma2);
+void inic_alpha(complex<double> a[], double s, double V[]);
 
 int main (void)
 {
     double k,s,V[N+1],mu,sigma2;
     int i,j;
-    complex<double> phi0[N+1];
+    complex<double> phi0[N+1], a[N], b[N];
 
     //Calculamos las constantes necesarias a partir de las fijadas
     k=2*pi*nC/N;
@@ -28,8 +29,7 @@ int main (void)
     potencial(V,k); //Valor del potencial en cada punto de la red discretizada
     mu=N/4.0; sigma2=N*N/256.0; //Valores indicados en el guion en unidades de h
     onda_inicial(phi0,k,mu,sigma2); //Inicializamos el valor de la función de onda en cada punto
-
-    cout << phi0[0];
+    inic_alpha(a,s,V);
 
     //alpha();
 
@@ -72,12 +72,26 @@ void onda_inicial(complex<double> phi0[], double k, double mu, double sigma2)
     int j;
 
     den=2*sigma2;
-    phi0[0]=phi0[N]=0;
+    phi0[0]=phi0[N]=0; //Imponemos las condiciones de contorno
     for(j=1;j<N;j++)
     {
         mod=exp(-(j-mu)*(j-mu)/den); phase=k*j; 
         phi0[j]=polar(mod,phase);
     }
+
+    return;
+}
+
+//Función inic_alpha: calcula los valores de los parámetros alpha necesarios para los cálculos
+//Argumentos: a[], vector donde se guardan los coeficientes; s, parámetro normalizado de discretización del
+//tiempo; V, vector con el valor del potencial en cada punto
+void inic_alpha(complex<double> a[], double s, double V[])
+{
+    int j;
+
+    a[N-1]=0.0;
+    for(j=N-1;j>=1;j--)
+        a[j-1]=-1.0/(-2+2/s*1i-V[j]+a[j]);
 
     return;
 }
