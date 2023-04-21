@@ -64,7 +64,8 @@ int main (void)
         funcion_onda(x,phi0,phi); //Calculamos el nuevo valor de la función de onda en cada punto
         nuevo_ciclo(phi0,phi); //Copiamos el nuevo vector en el del instante previo
 
-        //Representamos la norma (normalizada) en cada nodo del eje y calculamos la norma total
+        //Representamos la norma en cada nodo del eje y calculamos la norma total (normalizada)
+        //Integramos por el método del trapecio
         aux=norm(phi0[0]);
         sum=aux;
         fichODat << 0 << ", " << aux << endl;
