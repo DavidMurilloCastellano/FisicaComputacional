@@ -10,7 +10,7 @@ using namespace std;
 #define N 100 //Número de puntos en los que se discretiza el eje X
 #define nC 1 //Número de ciclos que completa la función de onda en nuestra red; debe cumplir n<=N/4
 #define L 0.3 //L denota a lambda (parámetro del potencial)
-#define T 100 //Instante de tiempo máximo hasta el que se ejecuta el programa
+#define T 200 //Instante de tiempo máximo hasta el que se ejecuta el programa
 
 //Cabecera con todas las funciones que hemos definido
 void potencial(double V[], double k);
@@ -32,7 +32,7 @@ int main (void)
     fichODat.open("schrodinger_data.dat");
     fichONorm.open("norma.txt");
     k=2*pi*nC/N;
-    s=1.0/(4*k*k);
+    s=1.0/(8*k*k); //Valor del guion: s=1.0/(4*k*k);
     potencial(V,k); //Valor del potencial en cada punto de la red discretizada
     mu=N/4.0; sigma2=N*N/256.0; //Valores indicados en el guion en unidades de h
     onda_inicial(phi0,k,mu,sigma2); //Inicializamos el valor de la función de onda en cada punto
