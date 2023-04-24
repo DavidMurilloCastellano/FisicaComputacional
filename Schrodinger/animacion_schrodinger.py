@@ -45,7 +45,7 @@ import io
 
 # Parámetros
 # ========================================
-file_in = "norma.txt" # Nombre del fichero de datos: "schrodinger_data.dat", "norma.txt"
+file_in = "schrodinger_data.dat" # Nombre del fichero de datos: "schrodinger_data.dat", "norma.txt"
 file_out = "conserv_norma-lambda=2" # Nombre del fichero de salida (sin extensión)
 interval = 100 # Tiempo entre fotogramas en milisegundos
 save_to_file = False # False: muestra la animación por pantalla,
