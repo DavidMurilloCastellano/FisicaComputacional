@@ -9,7 +9,7 @@ using namespace std;
 #define pi 3.14159265358979 //Valor del número pi
 #define N 100 //Número de puntos en los que se discretiza el eje X
 #define nC 1 //Número de ciclos que completa la función de onda en nuestra red; debe cumplir n<=N/4
-#define L 0.3 //L denota a lambda (parámetro del potencial)
+#define L 2 //L denota a lambda (parámetro del potencial)
 #define T 200 //Instante de tiempo máximo hasta el que se ejecuta el programa
 
 //Cabecera con todas las funciones que hemos definido
