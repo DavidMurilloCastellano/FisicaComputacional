@@ -4,15 +4,17 @@
 #include <cmath>
 #include <ctime>
 #include <cstdlib>
+# include "gsl_rng.h" //Libreria para generación de números aleatorios
 using namespace std;
 
-#define rng false //Indica si la configuración inicial es aleatoria (true) u ordenada (false)
+#define rng true //Indica si la configuración inicial es aleatoria (true) u ordenada (false)
 #define N 128 //Número de nodos del sistema en cada eje
 #define pMC 100 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
-#define T 4.5 //Temperatura del sistema
+#define T 1.5 //Temperatura del sistema
+
 
 //Cabecera con todas las funciones que hemos definido
-void conf_aleat(bool A[][N], int n);
+void conf_aleat(bool A[][N],int n, gsl_rng *tau);
 void conf_orden(bool A[][N],int n);
 //bool i2b(int x);
 int b2i(bool b);
@@ -27,11 +29,14 @@ int main (void)
     bool A[N][N], x,y;
     double p, mag, E, E2, cN;
     ofstream fichODat, fichOMag;
-    srand(time(NULL));
+    gsl_rng *tau;
+    int semilla=time(NULL); //Semilla del generador de números aleatorios
+    tau=gsl_rng_alloc(gsl_rng_taus); //Inicializamos el puntero
+    gsl_rng_set(tau,semilla); //Inicializamos la semilla
 
     //Elegimos una configuración inicial
     if(rng)
-        conf_aleat(A,N);
+        conf_aleat(A,N,tau);
     else
         conf_orden(A,N);
     
@@ -55,9 +60,9 @@ int main (void)
             //Elegimos un nodo al azar y aplicamos el algoritmo durante 1 pMC
             for(j=0; j<M; j++)
             {
-                n=rand()%N; m=rand()%N;
+                n=gsl_rng_uniform_int(tau,N); m=gsl_rng_uniform_int(tau,N);
                 p=exp(((-1.0)*DEnergia(A,n,m))/T);
-                if(p>1 || (rand()*1.0)/RAND_MAX<p)
+                if(p>1 || gsl_rng_uniform(tau)<p)
                     if(A[n][m])
                         A[n][m]=false;
                     else
@@ -87,13 +92,13 @@ int main (void)
 
 //Función conf_aleat: genera una distribución aleatoria de espines para la configuración inicial del sistema
 //Argumentos: A[][N], matriz con la configuración inicial (T=1; F=-1); n, número de nodos por eje
-void conf_aleat(bool A[][N],int n)
+void conf_aleat(bool A[][N],int n, gsl_rng *tau)
 {
     int i,j;
 
     for(i=0;i<n;i++)
         for(j=0;j<n;j++)
-            if(rand()%2==0)
+            if(gsl_rng_uniform_int(tau,2)==0)
                 A[i][j]=true;
             else
                 A[i][j]=false;
