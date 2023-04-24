@@ -9,7 +9,7 @@ using namespace std;
 #define pi 3.14159265358979 //Valor del número pi
 #define N 100 //Número de puntos en los que se discretiza el eje X
 #define nC 1 //Número de ciclos que completa la función de onda en nuestra red; debe cumplir n<=N/4
-#define L 2 //L denota a lambda (parámetro del potencial)
+#define L 5 //L denota a lambda (parámetro del potencial)
 #define T 200 //Instante de tiempo máximo hasta el que se ejecuta el programa
 
 //Cabecera con todas las funciones que hemos definido
@@ -41,16 +41,16 @@ int main (void)
     //Representamos la norma en cada nodo del eje y calculamos la norma total integrando por el método del trapecio
     aux=norm(phi0[0]);
     sum=aux;
-    fichODat << 0 << ", " << aux << endl;
+    fichODat << 0 << ", " << aux << ", " << V[0] << endl;
     for(l=1;l<N;l++)
     {
         aux=norm(phi0[l]);
         sum=sum+2*aux;
-        fichODat << l << ", " << aux << endl;
+        fichODat << l << ", " << aux << ", " << V[l] << endl;
     }
     aux=norm(phi0[N]);
     sum=sum+aux;
-    fichODat << N << ", " << aux << endl;
+    fichODat << N << ", " << aux << ", " << V[N] << endl;
         
     fichODat << endl;
     norma=sum/2; //Copiamos el valor de la integral en el instante inicial para normalizar
@@ -68,16 +68,16 @@ int main (void)
         //Integramos por el método del trapecio
         aux=norm(phi0[0]);
         sum=aux;
-        fichODat << 0 << ", " << aux << endl;
+        fichODat << 0 << ", " << aux << ", " << V[0] << endl;
         for(l=1;l<N;l++)
         {
             aux=norm(phi0[l]);
             sum=sum+2*aux;
-            fichODat << l << ", " << aux << endl;
+            fichODat << l << ", " << aux << ", " << V[l] << endl;
         }
         aux=norm(phi0[N]);
         sum=sum+aux;
-        fichODat << N << ", " << aux << endl;
+        fichODat << N << ", " << aux << ", " << V[N] << endl;
             
         fichODat << endl;
         fichONorm << n << ", " << sum/(2*norma) << endl;
