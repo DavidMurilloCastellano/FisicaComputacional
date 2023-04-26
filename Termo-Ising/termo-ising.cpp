@@ -8,10 +8,11 @@
 using namespace std;
 
 #define N 16 //Número de nodos del sistema en cada eje
-#define pMC 1e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
+#define ptos 10//Número de puntos a graficar
+#define pMC 1e2 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
 #define T1 1.5 //Extremo inferior del intervalo de temperaturas
 #define T2 3.5 //Extremo superior del intervalo de temperaturas
-#define nT 10 //Número de valores de temperatura que se van a considerar en el intervalo [T1,T2]
+#define nT 2 //Número de valores de temperatura que se van a considerar en el intervalo [T1,T2]
 
 //Cabecera con todas las funciones que hemos definido
 int b2i(bool b);
@@ -22,8 +23,8 @@ int corr(bool A[][N], int i);
 
 int main (void)
 {
-    double T, h, mag, mag2, mgn, E, E2, E4, p, cN;
-    int i1,i2, M, L, n, m, j, k, e, e2, en;
+    double T, h, mag, mag2, mgn, E, E2, E4, p, cN, en, Varmag, VarE, VarE2;
+    int i1,i2, M, L, n, m, j, k, e, e2;
     bool A[N][N];
     ofstream fichO;
 
@@ -42,16 +43,18 @@ int main (void)
     //El algoritmo se ejecuta para cada una de las temperaturas consideradas
     h=(T2-T1)/(nT-1); 
     T=T1;
-    do
+    for(k=0; k<nT; k++)
     {
+        
         //Partimos de una configuración ordenada
         for(i1=0;i2<N;i1++)
             for(i2=0;i2<N;i2++)
                 A[i1][i2]=true;
 
         //Calculamos el valor inicial de la energía
-        en=energia(A);
-        for(i1=1;i1<=100;i1++) //Tendremos 100 puntos en las gráficas
+        en=energia(A)/2.0;
+        fichO << T << endl;
+        for(i1=1;i1<=ptos;i1++) //Tendremos ptos puntos en las gráficas
         {
             //Inicializamos las sumas
             mag=mag2=E=E2=E4=0.0;
@@ -61,7 +64,7 @@ int main (void)
                 for(j=0; j<M; j++)
                 {
                     n=gsl_rng_uniform_int(tau,N); m=gsl_rng_uniform_int(tau,N);
-                    e=DEnergia(A,n,m); //CORREGIR ESTO
+                    e=DEnergia(A,n,m);
                     p=exp(-e/T);
                     if(p>1 || gsl_rng_uniform(tau)<p)
                     {
@@ -75,22 +78,27 @@ int main (void)
 
                 //Calculamos las sumas para obtener los promedios posteriores
                 mgn=magn(A); mag=mag+mgn; mag2=mag2+mgn*mgn;
-                e2=e*e; E=E+e;
+                e=en; e2=e*e; E=E+e;
                 E2=E2+e2; E4=E4+e2*e2;                
             }
-            //Calculamos los promedios
-            mag=mag/(pMC*M);
-            cN=(E2-E*E/pMC)/(4*M*T*pMC);
-            E=E/(4*N*pMC);
+            //Calculamos los promedios y las varianzas correspondientes
+            mag=mag/(pMC*M); Varmag=(mag2/(M*M*pMC)-mag*mag)/pMC;
+            cN=(E2-E*E/pMC)/(M*T*pMC); 
+            E=E/pMC; E2=E2/pMC;
+            VarE=(E2-E*E)/(4*M*pMC); VarE2=(E4/pMC-E2*E2)/(16*M*M*pMC);
+             
 
             //Volcamos al fichero los resultados obtenidos para representarlos luego
-            fichO << i1 << " " << mag << " " << mag2/(M*M*pMC)-mag*mag << " " << E << " " << E2/(16*M*pMC)-E*E;
-            fichO << " " << cN << endl;        
+            //Se ha aplicado un factor de cobertura correspondiente a un nivel de confianza del 95%
+            fichO << i1 << " " << mag << " " << 1.96*sqrt(Varmag) << " ";
+            fichO << E/(2*N) << " " << 1.96*sqrt(VarE) << " ";
+            fichO << cN << " " << VarE2 << " " << E2*E2 << " " << E4/pMC << endl;
+            //1.96*sqrt(VarE2+4*VarE)/(M*T) <<  endl;       
         }
         fichO << endl << endl;
-            
+
         T=T+h;
-    } while (T<=T2);
+       }
 
     fichO.close();
 
