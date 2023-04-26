@@ -7,11 +7,11 @@
 #include "gsl_rng.h" //Libreria para generación de números aleatorios
 using namespace std;
 
-#define N 128 //Número de nodos del sistema en cada eje
-#define pMC 100 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
+#define N 16 //Número de nodos del sistema en cada eje
+#define pMC 1e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
 #define T1 1.5 //Extremo inferior del intervalo de temperaturas
 #define T2 3.5 //Extremo superior del intervalo de temperaturas
-#define s 10 //Número de valores de temperatura que se van a considerar en el intervalo [T1,T2]
+#define nT 10 //Número de valores de temperatura que se van a considerar en el intervalo [T1,T2]
 
 //Cabecera con todas las funciones que hemos definido
 int b2i(bool b);
@@ -22,23 +22,68 @@ int corr(bool A[][N], int i);
 
 int main (void)
 {
-    double T;
-    int i1,i2;
+    double T, h, mag, mag2, mgn, E, E2, E4, p, cN;
+    int i1,i2, M, L, n, m, j, k, e, e2;
     bool A[N][N];
+    ofstream fichO;
 
     //Para la generación de números aleatorios con GSL
     gsl_rng *tau;
     int semilla=time(NULL); //Semilla del generador de números aleatorios
     tau=gsl_rng_alloc(gsl_rng_taus); //Inicializamos el puntero
     gsl_rng_set(tau,semilla); //Inicializamos la semilla
-
-    //El algoritmo se ejecuta para cada una de las temperaturas consideradas
-
-
+    
     //Partimos de una configuración ordenada
     for(i1=0;i2<N;i1++)
         for(i2=0;i2<N;i2++)
             A[i1][i2]=true;
+
+    //Cálculo de constantes
+    M=N*N; L=N-1;
+    fichO.open("magnitudes.txt");
+    
+    //El algoritmo se ejecuta para cada una de las temperaturas consideradas
+    h=(T2-T1)/(nT-1); 
+    T=T1;
+    do
+    {
+        for(i1=0;i1<100;i1++) //Tendremos 100 puntos en las gráficas
+        {
+            //Inicializamos las sumas
+            mag=mag2=E=E2=E4=0.0;
+            for(i2=0;i2<pMC;i2++)
+            {
+                //Elegimos un nodo al azar y aplicamos el algoritmo durante 1 pMC
+                for(j=0; j<M; j++)
+                {
+                    n=gsl_rng_uniform_int(tau,N); m=gsl_rng_uniform_int(tau,N);
+                    p=exp(-DEnergia(A,n,m)/T);
+                    if(p>1 || gsl_rng_uniform(tau)<p)
+                        if(A[n][m])
+                            A[n][m]=false;
+                        else
+                            A[n][m]=true;
+                }
+
+                //Calculamos las sumas para obtener los promedios posteriores
+                mgn=magn(A); mag=mag+mgn; mag2=mag2+mgn*mgn;
+                e=energia(A); e2=e*e; E=E+e; E2=E2+e2; E4=E4+e2*e2;                
+            }
+            //Calculamos los promedios
+            mag=mag/(pMC*M);
+            cN=(E2-E*E/pMC)/(4*M*T*pMC);
+            E=E/(4*N*pMC);
+
+            //Volcamos al fichero los resultados obtenidos para representarlos luego
+            fichO << i1 << " " << mag << " " << mag2/(M*M*pMC)-mag*mag << " " << E << " " << E2/(16*M*pMC)-E*E;
+            fichO << " " << cN << endl;        
+        }
+        fichO << endl << endl;
+            
+        T=T+h;
+    } while (T<=T2);
+
+    fichO.close();
 
     return 0;
 }
@@ -87,7 +132,7 @@ int DEnergia(bool A[][N],int n, int m)
 
 //Función magn: devuelve la magnetización promedio (multiplicada por N^2 por optimización)
 //Argumentos: A[][], matriz con la orientación de los espines.
-//Retorno: valor de la magnetización
+//Retorno: valor de la magnetización (por N^2)
 int magn(bool A[][N])
 {
     int i,j, sum;
@@ -97,12 +142,12 @@ int magn(bool A[][N])
         for(j=0;j<N;j++)
             sum=sum+b2i(A[i][j]);
     
-    return sum;
+    return abs(sum);
 }
 
-//Función energia: devuelve el doble de la energía del sistema en un determinado instante
+//Función energia: devuelve la energía del sistema en un determinado instante (multiplicada por 2 por optimización)
 //Argumentos: A[][], matriz con la orientación de los espines, 
-//Retorno: e, (doble) energía del sistema
+//Retorno: e, energía del sistema (por 2)
 int energia(bool A[][N])
 {
     int e,i,j;
