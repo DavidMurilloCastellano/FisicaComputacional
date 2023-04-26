@@ -23,7 +23,7 @@ int corr(bool A[][N], int i);
 int main (void)
 {
     double T, h, mag, mag2, mgn, E, E2, E4, p, cN;
-    int i1,i2, M, L, n, m, j, k, e, e2;
+    int i1,i2, M, L, n, m, j, k, e, e2, en;
     bool A[N][N];
     ofstream fichO;
 
@@ -33,10 +33,7 @@ int main (void)
     tau=gsl_rng_alloc(gsl_rng_taus); //Inicializamos el puntero
     gsl_rng_set(tau,semilla); //Inicializamos la semilla
     
-    //Partimos de una configuración ordenada
-    for(i1=0;i2<N;i1++)
-        for(i2=0;i2<N;i2++)
-            A[i1][i2]=true;
+    
 
     //Cálculo de constantes
     M=N*N; L=N-1;
@@ -47,7 +44,14 @@ int main (void)
     T=T1;
     do
     {
-        for(i1=0;i1<100;i1++) //Tendremos 100 puntos en las gráficas
+        //Partimos de una configuración ordenada
+        for(i1=0;i2<N;i1++)
+            for(i2=0;i2<N;i2++)
+                A[i1][i2]=true;
+
+        //Calculamos el valor inicial de la energía
+        en=energia(A);
+        for(i1=1;i1<=100;i1++) //Tendremos 100 puntos en las gráficas
         {
             //Inicializamos las sumas
             mag=mag2=E=E2=E4=0.0;
@@ -57,17 +61,22 @@ int main (void)
                 for(j=0; j<M; j++)
                 {
                     n=gsl_rng_uniform_int(tau,N); m=gsl_rng_uniform_int(tau,N);
-                    p=exp(-DEnergia(A,n,m)/T);
+                    e=DEnergia(A,n,m); //CORREGIR ESTO
+                    p=exp(-e/T);
                     if(p>1 || gsl_rng_uniform(tau)<p)
+                    {
+                        en=en+e;
                         if(A[n][m])
                             A[n][m]=false;
                         else
                             A[n][m]=true;
+                    }
                 }
 
                 //Calculamos las sumas para obtener los promedios posteriores
                 mgn=magn(A); mag=mag+mgn; mag2=mag2+mgn*mgn;
-                e=energia(A); e2=e*e; E=E+e; E2=E2+e2; E4=E4+e2*e2;                
+                e2=e*e; E=E+e;
+                E2=E2+e2; E4=E4+e2*e2;                
             }
             //Calculamos los promedios
             mag=mag/(pMC*M);
