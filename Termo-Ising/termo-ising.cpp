@@ -7,24 +7,24 @@
 #include "gsl_rng.h" //Libreria para generación de números aleatorios
 using namespace std;
 
-#define N 16 //Número de nodos del sistema en cada eje
-#define ptos 10//Número de puntos a graficar
-#define pMC 1e2 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
+#define N 32 //Número de nodos del sistema en cada eje
+#define ptos 100//Número de puntos a graficar
+#define pMC 1e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
 #define T1 1.5 //Extremo inferior del intervalo de temperaturas
 #define T2 3.5 //Extremo superior del intervalo de temperaturas
-#define nT 2 //Número de valores de temperatura que se van a considerar en el intervalo [T1,T2]
+#define nT 10 //Número de valores de temperatura que se van a considerar en el intervalo [T1,T2]
 
 //Cabecera con todas las funciones que hemos definido
 int b2i(bool b);
 int DEnergia(bool A[][N],int n, int m);
 int magn(bool A[][N]);
-int energia(bool A[][N]);
+double energia(bool A[][N]);
 int corr(bool A[][N], int i);
 
 int main (void)
 {
-    double T, h, mag, mag2, mgn, E, E2, E4, p, cN, en, Varmag, VarE, VarE2;
-    int i1,i2, M, L, n, m, j, k, e, e2;
+    double T, h, p, en, en2, sMag, sMag2, sE, sE2, sE4, mMag, mE, mE2, varMag, varE, varE2;
+    int i1,i2, M, L, n, m, j, k, mgn, e;
     bool A[N][N];
     ofstream fichO;
 
@@ -51,13 +51,13 @@ int main (void)
             for(i2=0;i2<N;i2++)
                 A[i1][i2]=true;
 
-        //Calculamos el valor inicial de la energía
-        en=energia(A)/2.0;
+        //Calculamos el valor inicial de la energía del sistema
+        en=energia(A);
         fichO << T << endl;
         for(i1=1;i1<=ptos;i1++) //Tendremos ptos puntos en las gráficas
         {
             //Inicializamos las sumas
-            mag=mag2=E=E2=E4=0.0;
+            sMag=sMag2=sE=sE2=sE4=0.0;
             for(i2=0;i2<pMC;i2++)
             {
                 //Elegimos un nodo al azar y aplicamos el algoritmo durante 1 pMC
@@ -77,23 +77,20 @@ int main (void)
                 }
 
                 //Calculamos las sumas para obtener los promedios posteriores
-                mgn=magn(A); mag=mag+mgn; mag2=mag2+mgn*mgn;
-                e=en; e2=e*e; E=E+e;
-                E2=E2+e2; E4=E4+e2*e2;                
+                mgn=magn(A);
+                sMag=sMag+mgn; sMag2=sMag2+mgn*mgn;
+                en2=en*en;
+                sE=sE+en; sE2=sE2+en2; sE4=sE4+en2*en2;                
             }
             //Calculamos los promedios y las varianzas correspondientes
-            mag=mag/(pMC*M); Varmag=(mag2/(M*M*pMC)-mag*mag)/pMC;
-            cN=(E2-E*E/pMC)/(M*T*pMC); 
-            E=E/pMC; E2=E2/pMC;
-            VarE=(E2-E*E)/(4*M*pMC); VarE2=(E4/pMC-E2*E2)/(16*M*M*pMC);
+            mMag=sMag/pMC; mE=sE/pMC; mE2=sE2/pMC;
+            varMag=sMag2/pMC-mMag*mMag; varE=mE2-mE*mE; varE2=sE4/pMC-mE2*mE2;
              
-
             //Volcamos al fichero los resultados obtenidos para representarlos luego
             //Se ha aplicado un factor de cobertura correspondiente a un nivel de confianza del 95%
-            fichO << i1 << " " << mag << " " << 1.96*sqrt(Varmag) << " ";
-            fichO << E/(2*N) << " " << 1.96*sqrt(VarE) << " ";
-            fichO << cN << " " << VarE2 << " " << E2*E2 << " " << E4/pMC << endl;
-            //1.96*sqrt(VarE2+4*VarE)/(M*T) <<  endl;       
+            fichO << i1 << " " << mMag/M << " " << 1.96*sqrt(varMag/pMC)/M << " "; //Cálculo de la magnetización promedio
+            fichO << mE/(2*N) << " " << 1.96*sqrt(varE/pMC)/(2*N) << " "; //Cálculo de la energía media
+            fichO << varE/(M*T) << " " << 1.96*sqrt((varE2+4*varE)/pMC)/(M*T) << endl; //Cálculo del calor específico     
         }
         fichO << endl << endl;
 
@@ -165,7 +162,7 @@ int magn(bool A[][N])
 //Función energia: devuelve la energía del sistema en un determinado instante (multiplicada por 2 por optimización)
 //Argumentos: A[][], matriz con la orientación de los espines, 
 //Retorno: e, energía del sistema (por 2)
-int energia(bool A[][N])
+double energia(bool A[][N])
 {
     int e,i,j;
 
@@ -193,7 +190,7 @@ int energia(bool A[][N])
     
     e=e+b2i(A[N-1][N-1])*(b2i(A[N-1][0])+b2i(A[N-1][N-2])+b2i(A[0][N-1])+b2i(A[N-2][N-1])); //Energía nodo (N-1,N-1)
 
-    return -e;
+    return -e/2.0;
 }
 
 
