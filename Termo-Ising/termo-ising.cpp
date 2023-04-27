@@ -7,12 +7,12 @@
 #include "gsl_rng.h" //Libreria para generación de números aleatorios
 using namespace std;
 
-#define N 32 //Número de nodos del sistema en cada eje
-#define ptos 100//Número de puntos a graficar
+#define N 16 //Número de nodos del sistema en cada eje
+#define ptos 10//Número de puntos a graficar
 #define pMC 1e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
 #define T1 1.5 //Extremo inferior del intervalo de temperaturas
 #define T2 3.5 //Extremo superior del intervalo de temperaturas
-#define nT 10 //Número de valores de temperatura que se van a considerar en el intervalo [T1,T2]
+#define nT 2 //Número de valores de temperatura que se van a considerar en el intervalo [T1,T2]
 
 //Cabecera con todas las funciones que hemos definido
 int b2i(bool b);
@@ -23,7 +23,7 @@ int corr(bool A[][N], int i);
 
 int main (void)
 {
-    double T, h, p, en, en2, sMag, sMag2, sE, sE2, sE4, mMag, mE, mE2, varMag, varE, varE2;
+    double T, h, p, en, en2, sMag, sMag2, sE, sE2, sE4, mMag, mE, mE2, varMag, varE, varE2, aux;
     int i1,i2, M, L, n, m, j, k, mgn, e;
     bool A[N][N];
     ofstream fichO;
@@ -83,14 +83,15 @@ int main (void)
                 sE=sE+en; sE2=sE2+en2; sE4=sE4+en2*en2;                
             }
             //Calculamos los promedios y las varianzas correspondientes
-            mMag=sMag/pMC; mE=sE/pMC; mE2=sE2/pMC;
-            varMag=sMag2/pMC-mMag*mMag; varE=mE2-mE*mE; varE2=sE4/pMC-mE2*mE2;
+            mMag=sMag/pMC; mE=sE/pMC; mE2=sE2/pMC; aux=mE*mE;
+            varMag=sMag2/pMC-mMag*mMag; varE=mE2-aux; varE2=sE4/pMC-mE2*mE2;
              
             //Volcamos al fichero los resultados obtenidos para representarlos luego
             //Se ha aplicado un factor de cobertura correspondiente a un nivel de confianza del 95%
             fichO << i1 << " " << mMag/M << " " << 1.96*sqrt(varMag/pMC)/M << " "; //Cálculo de la magnetización promedio
             fichO << mE/(2*N) << " " << 1.96*sqrt(varE/pMC)/(2*N) << " "; //Cálculo de la energía media
-            fichO << varE/(M*T) << " " << 1.96*sqrt((varE2+4*varE)/pMC)/(M*T) << endl; //Cálculo del calor específico     
+            //fichO << mE2/(4*M) << " " << 1.96*sqrt(varE2/pMC)/(4*M) << " ";
+            fichO << varE/(M*T) << " " << 1.96*sqrt((varE2+4*aux*varE)/pMC)/(M*T) << endl; //Cálculo del calor específico   
         }
         fichO << endl << endl;
 
