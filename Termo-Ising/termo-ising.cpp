@@ -4,15 +4,16 @@
 #include <cmath>
 #include <ctime>
 #include <cstdlib>
+#include <string>
 #include "gsl_rng.h" //Libreria para generación de números aleatorios
 using namespace std;
 
 #define N 16 //Número de nodos del sistema en cada eje
-#define ptos 100//Número de puntos a graficar
-#define pMC 1e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
+#define ptos 10//Número de puntos a graficar
+#define pMC 1e2 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
 #define T1 1.5 //Extremo inferior del intervalo de temperaturas
 #define T2 3.5 //Extremo superior del intervalo de temperaturas
-#define nT 10 //Número de valores de temperatura que se van a considerar en el intervalo [T1,T2]
+#define nT 2 //Número de valores de temperatura que se van a considerar en el intervalo [T1,T2]
 
 //Cabecera con todas las funciones que hemos definido
 int b2i(bool b);
@@ -38,7 +39,7 @@ int main (void)
 
     //Cálculo de constantes
     M=N*N; L=N-1;
-    fichO.open("magnitudes.txt");
+    fichO.open("magnitudes-N="+to_string(N)+".txt");
     
     //El algoritmo se ejecuta para cada una de las temperaturas consideradas
     h=(T2-T1)/(nT-1); 
@@ -90,8 +91,7 @@ int main (void)
             //Se ha aplicado un factor de cobertura correspondiente a un nivel de confianza del 95%
             fichO << i1 << " " << mMag/M << " " << 1.96*sqrt(varMag/pMC)/M << " "; //Cálculo de la magnetización promedio
             fichO << mE/(2*N) << " " << 1.96*sqrt(varE/pMC)/(2*N) << " "; //Cálculo de la energía media
-            //fichO << mE2/(4*M) << " " << 1.96*sqrt(varE2/pMC)/(4*M) << " ";
-            fichO << varE/(M*T) << " " << 1.96*sqrt((varE2+4*aux*varE)/pMC)/(M*T) << endl; //Cálculo del calor específico   
+            fichO << varE/(M*T) << " " << 1.96*sqrt((varE2+4*aux*varE)/pMC)/(M*T) << endl;//Cálculo del calor específico   
         }
         fichO << endl << endl;
 
