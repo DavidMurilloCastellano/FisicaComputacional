@@ -89,11 +89,11 @@ int main (void)
              
             //Volcamos al fichero los resultados obtenidos para representarlos luego
             //Se ha aplicado un factor de cobertura correspondiente a un nivel de confianza del 95%
-            fichO << i1 << " " << mMag/M << " " << 1.96*sqrt(varMag/pMC)/M << " "; //Cálculo de la magnetización promedio
-            fichO << mE/(2*N) << " " << 1.96*sqrt(varE/pMC)/(2*N) << " "; //Cálculo de la energía media
-            fichO << varE/(M*T) << " " << 1.96*sqrt((varE2+4*aux*varE)/pMC)/(M*T) << endl;//Cálculo del calor específico   
+            fichO << i1 << ", " << mMag/M << ", " << 1.96*sqrt(varMag/pMC)/M << ", "; //Cálculo de la magnetización promedio
+            fichO << mE/(2*N) << ", " << 1.96*sqrt(varE/pMC)/(2*N) << ", "; //Cálculo de la energía media
+            fichO << varE/(M*T) << ", " << 1.96*sqrt((varE2+4*aux*varE)/pMC)/(M*T) << endl;//Cálculo del calor específico   
         }
-        fichO << endl << endl;
+        fichO << endl;
 
         T=T+h;
        }
