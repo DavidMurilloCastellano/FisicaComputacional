@@ -9,11 +9,11 @@
 using namespace std;
 
 #define N 16 //Número de nodos del sistema en cada eje
-#define ptos 10//Número de puntos a graficar
-#define pMC 1e2 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
+#define ptos 100//Número de puntos a graficar
+#define pMC 1e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
 #define T1 1.5 //Extremo inferior del intervalo de temperaturas
 #define T2 3.5 //Extremo superior del intervalo de temperaturas
-#define nT 2 //Número de valores de temperatura que se van a considerar en el intervalo [T1,T2]
+#define nT 10 //Número de valores de temperatura que se van a considerar en el intervalo [T1,T2]
 
 //Cabecera con todas las funciones que hemos definido
 int b2i(bool b);
