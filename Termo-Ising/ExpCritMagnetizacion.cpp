@@ -20,7 +20,7 @@ int magn(bool A[][N]);
 
 int main (void)
 {
-    int M, L, i, j, n, m, e;
+    int M, L, i, j, k, n, m, e;
     bool A[N][N];
     double b, b0, T, p, sMag, mag;
     ofstream fichO;
@@ -38,10 +38,12 @@ int main (void)
     //Aplicamos el algoritmo de Monte-Carlo hasta alcanzar la precisión indicada
     T=T0*1.0;
     b=0;
+    k=0;
     do
     {
         b0=b;
         T=T/10;
+        k++;
 
         //Partimos de una configuración ordenada
         for(i=0;i<N;i++)
@@ -74,11 +76,12 @@ int main (void)
 
         //Calculamos el nuevo exponente crítico
         b=log(mag)/log(T);        
-    } while (abs(b-b0)>tol);
-    
-    //Mostramos los resultados en pantalla
-    fichO << "Exponente crítico de la magnetización: " << b << endl;
-    fichO << "Temperatura (relativa a la temperatura crítica) a la que se ha obtenido: " << T << endl;
+
+        //Mostramos los resultados en pantalla
+        fichO << "Exponente crítico de la magnetización: " << b << endl;
+        fichO << "Temperatura (relativa a la temperatura crítica) a la que se ha obtenido: " << T << endl;
+        
+    } while (abs(b-b0)>tol && k<10);
 
     return 0;
 }
