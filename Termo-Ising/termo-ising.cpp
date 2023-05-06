@@ -35,8 +35,6 @@ int main (void)
     tau=gsl_rng_alloc(gsl_rng_taus); //Inicializamos el puntero
     gsl_rng_set(tau,semilla); //Inicializamos la semilla
     
-    
-
     //Cálculo de constantes
     M=N*N; L=N-1;
     fichO.open("magnitudes-N="+to_string(N)+".txt");
@@ -48,7 +46,7 @@ int main (void)
     {
         
         //Partimos de una configuración ordenada
-        for(i1=0;i2<N;i1++)
+        for(i1=0;i1<N;i1++)
             for(i2=0;i2<N;i2++)
                 A[i1][i2]=true;
 
@@ -224,3 +222,4 @@ int corr(bool A[][N], int i)
     
     return sum;
 }
+
