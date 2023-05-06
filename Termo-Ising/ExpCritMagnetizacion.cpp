@@ -1,6 +1,6 @@
 //Incluimos las librerías que necesitamos y definimos constantes universales
 #include <iostream>
-//#include <fstream>
+#include <fstream>
 #include <cmath>
 #include <ctime>
 #include <cstdlib>
@@ -23,6 +23,7 @@ int main (void)
     int M, L, i, j, n, m, e;
     bool A[N][N];
     double b, b0, T, p, sMag, mag;
+    ofstream fichO;
 
     //Para la generación de números aleatorios con GSL
     gsl_rng *tau;
@@ -32,6 +33,7 @@ int main (void)
     
     //Cálculo de constantes
     M=N*N; L=N-1;
+    fichO.open("exp-crit_magn.txt");
     
     //Aplicamos el algoritmo de Monte-Carlo hasta alcanzar la precisión indicada
     T=T0*1.0;
@@ -75,8 +77,8 @@ int main (void)
     } while (abs(b-b0)>tol);
     
     //Mostramos los resultados en pantalla
-    cout << "Exponente crítico de la magnetización: " << b << endl;
-    cout << "Temperatura (relativa a la temperatura crítica) a la que se ha obtenido: " << T << endl;
+    fichO << "Exponente crítico de la magnetización: " << b << endl;
+    fichO << "Temperatura (relativa a la temperatura crítica) a la que se ha obtenido: " << T << endl;
 
     return 0;
 }
