@@ -9,11 +9,13 @@
 using namespace std;
 
 #define N 128 //Número de nodos del sistema en cada eje
-#define pMC 1e6 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
-#define tol 1e-6 //Diferencia máxima (en valor absoluto) entre dos valores sucesivos de exponente crítico de la magnetización
-#define T0 1e-3 //Error relativo inicial entre la temperatura crítica y la empleada en el cálculo numérico
+#define pMC 1e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
+#define tol 1e-4 //Diferencia máxima (en valor absoluto) entre dos valores sucesivos de exponente crítico de la magnetización
+#define Tc 2.26918531421 //Temperatura crítica en las unidades empleadas según: https://en.wikipedia.org/wiki/Square_lattice_Ising_model
+#define errT 0.5 //Paso entre las sucesivas temperaturas consideradas
 
 //Cabecera con todas las funciones que hemos definido
+void conf_aleat(bool A[][N],int n, gsl_rng *tau);
 int b2i(bool b);
 int DEnergia(bool A[][N],int n, int m);
 int magn(bool A[][N]);
@@ -22,7 +24,7 @@ int main (void)
 {
     int M, L, i, j, k, n, m, e;
     bool A[N][N];
-    double b, b0, T, p, sMag, mag;
+    double b, b0, T, p, sMag, mag, eT;
     ofstream fichO;
 
     //Para la generación de números aleatorios con GSL
@@ -36,19 +38,24 @@ int main (void)
     fichO.open("exp-crit_magn.txt");
     
     //Aplicamos el algoritmo de Monte-Carlo hasta alcanzar la precisión indicada
-    T=T0*1.0;
     b=0;
     k=0;
+    eT=1e-3;
     do
     {
         b0=b;
-        T=T/10;
         k++;
-
+        eT=eT*errT;
+        T=Tc-eT;
+/*
         //Partimos de una configuración ordenada
         for(i=0;i<N;i++)
             for(j=0;j<N;j++)
                 A[i][j]=true;
+*/
+
+        //Partimos de una configuración aleatoria
+        conf_aleat(A,N,tau);
 
         sMag=0.0; //Inicializamos la suma
         for(i=0;i<pMC;i++)
@@ -75,17 +82,34 @@ int main (void)
         mag=sMag/(pMC*M);
 
         //Calculamos el nuevo exponente crítico
-        b=log(mag)/log(T);        
+        b=log(mag)/log(eT);        
 
         //Mostramos los resultados en pantalla
+        fichO << "Magnetización promedio: " << mag << endl;
         fichO << "Exponente crítico de la magnetización: " << b << endl;
-        fichO << "Temperatura (relativa a la temperatura crítica) a la que se ha obtenido: " << T << endl;
+        fichO << "Temperatura a la que se ha obtenido: " << T << endl << endl;
         
-    } while (abs(b-b0)>tol && k<10);
+    } while (abs(b-b0)>tol && k<1);
 
     return 0;
 }
 
+
+//Función conf_aleat: genera una distribución aleatoria de espines para la configuración inicial del sistema
+//Argumentos: A[][N], matriz con la configuración inicial (T=1; F=-1); n, número de nodos por eje
+void conf_aleat(bool A[][N],int n, gsl_rng *tau)
+{
+    int i,j;
+
+    for(i=0;i<n;i++)
+        for(j=0;j<n;j++)
+            if(gsl_rng_uniform_int(tau,2)==0)
+                A[i][j]=true;
+            else
+                A[i][j]=false;
+
+    return;
+}
 
 //Función b2i: devuelve 1 si el booleano es true y -1 si es false
 //Argumentos: b, variable booleana que se desea transformar
