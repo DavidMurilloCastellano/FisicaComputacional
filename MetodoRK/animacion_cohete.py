@@ -48,15 +48,15 @@ import numpy as np
 # Parámetros
 # ========================================
 file_in = "trayectorias.txt" # Nombre del fichero de datos CAMBIAR
-file_out = "cohete" # Nombre del fichero de salida (sin extensión)
+file_out = "cohete-orbitas(arg=0.47,phi=0.6)" # Nombre del fichero de salida (sin extensión)
 
 # Límites de los ejes X e Y.
-x_min = -0.5
-x_max = 1.5
-y_min = -1
-y_max = 1
+x_min = -1
+x_max = 2
+y_min = -1.5
+y_max = 1.5
 
-interval = 50 # Tiempo entre fotogramas en milisegundos
+interval = 20 # Tiempo entre fotogramas en milisegundos
 show_trail = True # Muestra la "estela" del planeta
 trail_width = 1 # Ancho de la estela
 save_to_file = False # False: muestra la animación por pantalla,
@@ -67,7 +67,7 @@ dpi = 150 # Calidad del vídeo de salida (dots per inch)
 # Radio del planeta, en las mismas unidades que la posición
 # Puede ser un número (el radio de todos los planetas) o una lista con
 # el radio de cada uno
-planet_radius = [0.02, 0.06]
+planet_radius = [0.015, 0.005, 0.01]
 #planet_radius = [0.5, 0.7, 1.1]
 
 

@@ -12,8 +12,8 @@ using namespace std;
 #define RT 6.378160e6 //Radio de la Tierra
 #define LT 1.7374e6 //Radio de la Luna
 #define ve 11.2e3 //Velocidad de escape de la Tierra
-#define h 60 //Paso temporal con el que se aplicará el algoritmo
-#define T 1e8 //Instante hasta el que se aplica el algoritmo
+#define h 30 //Paso temporal con el que se aplicará el algoritmo
+#define T 1e7 //Instante hasta el que se aplica el algoritmo
 #define A 10 //Número de pasos que omiten antes de pasar al fichero
 
 
@@ -37,12 +37,13 @@ int main (void)
 
     //Indicamos las condiciones iniciales
     y[0]=RT/d;
-    y[1]=ve/d;
-    y[2]=0.5;
-    y[3]=0;
+    y[1]=0.9887*ve/d*cos(0.47);
+    y[2]=1.15;
+    y[3]=0.9887*y[0]*ve/d*sin(0.47);
 
     //Escribimos las condiciones iniciales en el fichero de salida
     fichO.open("trayectorias.txt");
+    fichO << 0 << ", " << 0 << endl;
     fichO << y[0]*cos(y[2]) << ", " << y[0]*sin(y[2]) << endl;
     fichO << 1 << ", " << 0 << endl << endl; 
 
@@ -87,6 +88,7 @@ int main (void)
 
         if(j%A==0)
         {
+            fichO << 0 << ", " << 0 << endl;
             fichO << y[0]*cos(y[2]) << ", " << y[0]*sin(y[2]) << endl;
             fichO << cos(w*t) << ", " << sin(w*t) << endl << endl;
         }
