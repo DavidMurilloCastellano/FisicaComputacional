@@ -8,11 +8,11 @@
 #include "gsl_rng.h" //Libreria para generación de números aleatorios
 using namespace std;
 
-#define N 256 //Número de nodos del sistema en cada eje
-#define pMC 1e5 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
+#define N 1024 //Número de nodos del sistema en cada eje
+#define pMC 1e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
 #define tol 1e-4 //Diferencia máxima (en valor absoluto) entre dos valores sucesivos de exponente crítico de la magnetización
 #define Tc 2.26918531421 //Temperatura crítica en las unidades empleadas según: https://en.wikipedia.org/wiki/Square_lattice_Ising_model
-#define errT 0.5 //Paso entre las sucesivas temperaturas consideradas
+#define errT 1e-3 //Paso entre las sucesivas temperaturas consideradas
 
 //Cabecera con todas las funciones que hemos definido
 void conf_aleat(bool A[][N],int n, gsl_rng *tau);
@@ -40,7 +40,7 @@ int main (void)
     //Aplicamos el algoritmo de Monte-Carlo hasta alcanzar la precisión indicada
     b=0;
     k=0;
-    eT=0;
+    eT=1;
     do
     {
         b0=b;
@@ -82,7 +82,7 @@ int main (void)
         mag=sMag/(pMC*M);
 
         //Calculamos el nuevo exponente crítico
-        //b=log(mag)/log(eT);        
+        b=log(mag)/log(eT);        
 
         //Mostramos los resultados en pantalla
         fichO << "Magnetización promedio: " << mag << endl;
