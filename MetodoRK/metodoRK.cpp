@@ -13,8 +13,8 @@ using namespace std;
 #define LT 1.7374e6 //Radio de la Luna
 #define ve 11.2e3 //Velocidad de escape de la Tierra
 #define h 30 //Paso temporal con el que se aplicará el algoritmo
-#define T 1e7 //Instante hasta el que se aplica el algoritmo
-#define A 10 //Número de pasos que omiten antes de pasar al fichero
+#define T 2e5 //Instante hasta el que se aplica el algoritmo
+#define A 40 //Número de pasos que omiten antes de pasar al fichero
 
 
 //Cabecera con todas las funciones que hemos definido
@@ -23,13 +23,14 @@ double f1(double y2); //ED de r
 double f2(double t, double y1, double y3, double y4, double D, double mu); //ED de p_r
 double f3(double y1, double y4); //ED de phi
 double f4(double t, double y1, double y3, double D, double mu); //ED de p_phi
+double hamilton(double t, double y1, double y2, double y3, double y4, double D, double mu);
 
 
 int main (void)
 {
     double D, mu, y0[4], y[4], k[4][4], t;
     int i,j;
-    ofstream fichO;
+    ofstream fichO, fichOH;
 
     //Calculamos las constantes
     D=G*MT/(d*d*d);
@@ -37,12 +38,13 @@ int main (void)
 
     //Indicamos las condiciones iniciales
     y[0]=RT/d;
-    y[1]=0.9887*ve/d*cos(0.47);
-    y[2]=1.15;
-    y[3]=0.9887*y[0]*ve/d*sin(0.47);
+    y[1]=0.99*ve/d*cos(0);
+    y[2]=1;
+    y[3]=0.99*y[0]*ve/d*sin(0);
 
     //Escribimos las condiciones iniciales en el fichero de salida
     fichO.open("trayectorias.txt");
+    fichOH.open("hamiltoniano.txt");
     fichO << 0 << ", " << 0 << endl;
     fichO << y[0]*cos(y[2]) << ", " << y[0]*sin(y[2]) << endl;
     fichO << 1 << ", " << 0 << endl << endl; 
@@ -81,7 +83,7 @@ int main (void)
 
         //Calculamos el valor de cada variable en el instante t+h
         for(i=0;i<4;i++)
-            y[i]=y0[i]+(k[0][i]+k[1][i]+k[2][i]+k[3][i])/6;
+            y[i]=y0[i]+(k[0][i]+2*k[1][i]+2*k[2][i]+k[3][i])/6;
         
         //Pasamos los datos al fichero cuando se indique
         t=t+h;
@@ -91,11 +93,15 @@ int main (void)
             fichO << 0 << ", " << 0 << endl;
             fichO << y[0]*cos(y[2]) << ", " << y[0]*sin(y[2]) << endl;
             fichO << cos(w*t) << ", " << sin(w*t) << endl << endl;
+
+            //Comprobamos que se conserva el hamiltoniano modificado
+            fichOH << t << ", " << hamilton(t,y[0],y[1],y[2],y[3],D,mu)-w*y[3] << endl;
         }
         
     }
 
     fichO.close();
+    fichOH.close();
 
     return 0;
 }
@@ -128,4 +134,15 @@ double f4(double t, double y1, double y3, double D, double mu)
     r=sqrt(1+y1*y1-2*y1*cos(y3-w*t));
     r=r*r*r;
     return -D*mu*y1/r*sin(y3-w*t);
+}
+
+double hamilton(double t, double y1, double y2, double y3, double y4, double D, double mu)
+{
+    double H, r, aux;
+
+    aux=y1*y1;
+    r=sqrt(1+aux-2*y1*cos(y3-w*t));
+    H=y2*y2/2+y4*y4/(2*aux)-D*(1/y1+mu/r);
+
+    return H;
 }
