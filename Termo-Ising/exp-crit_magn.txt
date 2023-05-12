@@ -1,0 +1,4 @@
+Magnetización promedio: 0.590833
+Exponente crítico de la magnetización: 0.0761784
+Temperatura a la que se ha obtenido: 2.26819
+
