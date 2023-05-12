@@ -12,7 +12,7 @@ using namespace std;
 #define pMC 1e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
 #define tol 1e-4 //Diferencia máxima (en valor absoluto) entre dos valores sucesivos de exponente crítico de la magnetización
 #define Tc 2.26918531421 //Temperatura crítica en las unidades empleadas según: https://en.wikipedia.org/wiki/Square_lattice_Ising_model
-#define errT 1e-3 //Paso entre las sucesivas temperaturas consideradas
+#define errT 0.5 //Paso entre las sucesivas temperaturas consideradas
 
 //Cabecera con todas las funciones que hemos definido
 void conf_aleat(bool A[][N],int n, gsl_rng *tau);
@@ -25,7 +25,7 @@ int main (void)
     int M, L, i, j, k, n, m, e;
     bool A[N][N];
     double b, b0, T, p, sMag, mag, eT;
-    ofstream fichO;
+    ofstream fichO, fichOb;
 
     //Para la generación de números aleatorios con GSL
     gsl_rng *tau;
@@ -35,12 +35,13 @@ int main (void)
     
     //Cálculo de constantes
     M=N*N; L=N-1;
-    fichO.open("exp-crit_magn.txt");
+    fichO.open("m-T.txt");
+    fichOb.open("exp-crit_magn.txt");
     
     //Aplicamos el algoritmo de Monte-Carlo hasta alcanzar la precisión indicada
     b=0;
     k=0;
-    eT=1;
+    eT=0.1;
     do
     {
         b0=b;
@@ -85,11 +86,13 @@ int main (void)
         b=log(mag)/log(eT);        
 
         //Mostramos los resultados en pantalla
-        fichO << "Magnetización promedio: " << mag << endl;
-        fichO << "Exponente crítico de la magnetización: " << b << endl;
-        fichO << "Temperatura a la que se ha obtenido: " << T << endl << endl;
+        fichO << T << ", " << mag << endl;
+        fichOb << T << ", " << b << endl;
         
-    } while (abs(b-b0)>tol && k<1);
+    } while (eT>=1e-6 && k<=15);
+
+    fichO.close();
+    fichOb.close();
 
     return 0;
 }
