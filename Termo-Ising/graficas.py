@@ -13,9 +13,9 @@ N="128"
 
 #Ficheros
 file_in = "magnitudes-N="+N+".txt" # Nombre del fichero de datos
-file_out1 = "magnetizacion-N="+N+".pdf" # Nombre del fichero de salida (sin extensión)
-file_out2 = "energia-N="+N+".pdf" # Nombre del fichero de salida (sin extensión)
-file_out3 = "calor-esp-N="+N+".pdf" # Nombre del fichero de salida (sin extensión)
+file_out1 = "magnetizacion-N="+N+".pdf" # Nombre del fichero de salida
+file_out2 = "energia-N="+N+".pdf" # Nombre del fichero de salida
+file_out3 = "calor-esp-N="+N+".pdf" # Nombre del fichero de salida
 
 # Lectura del fichero de datos
 # ========================================
@@ -44,7 +44,7 @@ for frame_data_str in data_str.split("\n\n"):
         # a la lista
         frames_data.append(frame_data)
 
-# Almacena toda la información en un arrary de numpy
+# Almacena toda la información en un array de numpy
 frames_data = np.array(frames_data)
 fig1=plt.figure()
 ax = plt.subplot(111)

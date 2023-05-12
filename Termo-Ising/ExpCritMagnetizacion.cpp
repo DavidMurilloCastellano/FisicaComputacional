@@ -35,7 +35,7 @@ int main (void)
     
     //Cálculo de constantes
     M=N*N; L=N-1;
-    fichO.open("m-T.txt");
+    fichO.open("ln(m)-ln(T).txt");
     fichOb.open("exp-crit_magn.txt");
     
     //Aplicamos el algoritmo de Monte-Carlo hasta alcanzar la precisión indicada
@@ -86,7 +86,8 @@ int main (void)
         b=log(mag)/log(eT);        
 
         //Mostramos los resultados en pantalla
-        fichO << T << ", " << mag << endl;
+        fichO.precision(10);
+        fichO << log(eT) << ", " << log(mag) << endl;
         fichOb << T << ", " << b << endl;
         
     } while (eT>=1e-6 && k<=15);
