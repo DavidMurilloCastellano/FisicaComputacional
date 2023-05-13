@@ -4,8 +4,8 @@ import numpy as np
 import io
 
 #Ficheros
-file_in = "ln(m)-ln(T).txt" # Nombre del fichero de datos
-file_out = "ln(m)-ln(T).pdf" # Nombre del fichero de salida
+file_in = "ln(m)-ln(T-Tc).txt" # Nombre del fichero de datos
+file_out = "ln(m)-ln(T-Tc).pdf" # Nombre del fichero de salida
 
 #Función a ajustar
 def func(x, a, b):
