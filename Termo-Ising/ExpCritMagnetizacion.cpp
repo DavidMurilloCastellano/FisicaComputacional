@@ -9,7 +9,7 @@
 using namespace std;
 
 #define N 2048 //Número de nodos del sistema en cada eje
-#define pMC 1e5 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
+#define pMC 5e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
 #define tol 1e-4 //Diferencia máxima (en valor absoluto) entre dos valores sucesivos de exponente crítico de la magnetización
 #define Tc 2.26918531421 //Temperatura crítica en las unidades empleadas según: https://en.wikipedia.org/wiki/Square_lattice_Ising_model
 #define errT 0.5 //Paso entre las sucesivas temperaturas consideradas
@@ -22,9 +22,9 @@ int magn(bool A[][N]);
 
 int main (void)
 {
-    int M, L, i, j, k, n, m, e;
+    int M, L, i, j, k, n, m, e, mgn;
     bool A[N][N];
-    double b, b0, T, p, sMag, mag, eT;
+    double b, b0, T, p, sMag, sMag2, mMag, mag, varmag, eT;
     ofstream fichO, fichOb, fichG;
 
     //Para la generación de números aleatorios con GSL
@@ -59,7 +59,7 @@ int main (void)
         //Partimos de una configuración aleatoria
 //        conf_aleat(A,N,tau);
 
-        sMag=0.0; //Inicializamos la suma
+        sMag=sMag2=0.0; //Inicializamos la suma
         for(i=0;i<pMC;i++)
         {
             //Elegimos un nodo al azar y aplicamos el algoritmo durante 1 pMC
@@ -77,11 +77,13 @@ int main (void)
                  }
             }
             //Sumamos
-            sMag=sMag+magn(A);
+            mgn=magn(A);
+            sMag=sMag+mgn; sMag2=sMag2+mgn*mgn;
         }
 
         //Calculamos la magnetización promedio
-        mag=sMag/(pMC*M);
+        mMag=sMag/pMC; varmag=sMag2/pMC-mMag*mMag;
+        mag=mMag/M;
 
         //Calculamos el nuevo exponente crítico
         b=log(mag)/log(eT);        
@@ -89,7 +91,7 @@ int main (void)
         //Pasamos los resultados a un fichero
         //fichO.precision(10);
         fichO << log(eT) << ", " << log(mag) << endl;
-        fichG << T << ", " << mag << endl;
+        fichG << T << ", " << mag << ", " << sqrt(varmag/pMC)/M << endl;
         fichOb << T << ", " << b << endl;
         
     } while (eT>=1e-6 && k<=9);
