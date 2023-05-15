@@ -9,10 +9,10 @@
 using namespace std;
 
 #define N 2048 //Número de nodos del sistema en cada eje
-#define pMC 5e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
+#define pMC 1e5 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
 #define tol 1e-4 //Diferencia máxima (en valor absoluto) entre dos valores sucesivos de exponente crítico de la magnetización
 #define Tc 2.26918531421 //Temperatura crítica en las unidades empleadas según: https://en.wikipedia.org/wiki/Square_lattice_Ising_model
-#define errT 0.25 //Paso entre las sucesivas temperaturas consideradas
+#define errT 0.5 //Paso entre las sucesivas temperaturas consideradas
 
 //Cabecera con todas las funciones que hemos definido
 void conf_aleat(bool A[][N],int n, gsl_rng *tau);
@@ -89,10 +89,10 @@ int main (void)
         //Pasamos los resultados a un fichero
         //fichO.precision(10);
         fichO << log(eT) << ", " << log(mag) << endl;
-        fichG << T << ", " << m << endl;
+        fichG << T << ", " << mag << endl;
         fichOb << T << ", " << b << endl;
         
-    } while (eT>=1e-6 && k<=12);
+    } while (eT>=1e-6 && k<=9);
 
     fichO.close();
     fichOb.close();
