@@ -9,7 +9,7 @@
 using namespace std;
 
 #define N 2048 //Número de nodos del sistema en cada eje
-#define pMC 5e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
+#define pMC 1e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
 #define tol 1e-4 //Diferencia máxima (en valor absoluto) entre dos valores sucesivos de exponente crítico de la magnetización
 #define Tc 2.26918531421 //Temperatura crítica en las unidades empleadas según: https://en.wikipedia.org/wiki/Square_lattice_Ising_model
 #define errT 0.5 //Paso entre las sucesivas temperaturas consideradas
@@ -24,7 +24,8 @@ int main (void)
 {
     int M, L, i, j, k, n, m, e, mgn;
     bool A[N][N];
-    double b, b0, T, p, sMag, sMag2, mMag, mag, varmag, eT;
+    double b, b0, T, p, sMag, mMag, mag, eT;
+    long double sMag2, varmag;
     ofstream fichO, fichOb, fichG;
 
     //Para la generación de números aleatorios con GSL
@@ -94,7 +95,7 @@ int main (void)
         fichG << T << ", " << mag << ", " << sqrt(varmag/pMC)/M << endl;
         fichOb << T << ", " << b << endl;
         
-    } while (eT>=1e-6 && k<=9);
+    } while (eT>=1e-6 && k<=4);
 
     fichO.close();
     fichOb.close();
