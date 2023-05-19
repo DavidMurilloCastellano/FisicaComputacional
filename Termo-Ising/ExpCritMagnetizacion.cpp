@@ -95,7 +95,7 @@ int main (void)
         fichG << T << ", " << mag << ", " << sqrt(varmag/pMC)/M << endl;
         fichOb << T << ", " << b << endl;
         
-    } while (eT>=1e-6 && k<=4);
+    } while (eT>=1e-6 && k<=8);
 
     fichO.close();
     fichOb.close();
