@@ -58,7 +58,7 @@ int main (void)
 
 
         //Partimos de una configuración aleatoria
-//        conf_aleat(A,N,tau);
+        //conf_aleat(A,N,tau);
 
         sMag=sMag2=0.0; //Inicializamos la suma
         for(i=0;i<pMC;i++)
@@ -83,7 +83,8 @@ int main (void)
         }
 
         //Calculamos la magnetización promedio
-        mMag=sMag/pMC; varmag=sMag2/pMC-mMag*mMag;
+        mMag=sMag/pMC;
+        varmag=sMag2/pMC-mMag*mMag;
         mag=mMag/M;
 
         //Calculamos el nuevo exponente crítico
@@ -92,7 +93,7 @@ int main (void)
         //Pasamos los resultados a un fichero
         //fichO.precision(10);
         fichO << log(eT) << ", " << log(mag) << endl;
-        fichG << T << ", " << mag << ", " << sqrt(varmag/pMC)/M << endl;
+        fichG << T << ", " << mag << ", " << varmag << ", " << sqrt(varmag/pMC)/M << endl;
         fichOb << T << ", " << b << endl;
         
     } while (k<=8);
