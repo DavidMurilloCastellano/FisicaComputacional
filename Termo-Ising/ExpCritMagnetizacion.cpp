@@ -8,7 +8,7 @@
 #include "gsl_rng.h" //Libreria para generación de números aleatorios
 using namespace std;
 
-#define N 2048 //Número de nodos del sistema en cada eje
+#define N 16 //Número de nodos del sistema en cada eje
 #define pMC 1e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
 #define tol 1e-4 //Diferencia máxima (en valor absoluto) entre dos valores sucesivos de exponente crítico de la magnetización
 #define Tc 2.26918531421 //Temperatura crítica en las unidades empleadas según: https://en.wikipedia.org/wiki/Square_lattice_Ising_model
@@ -18,13 +18,13 @@ using namespace std;
 void conf_aleat(bool A[][N],int n, gsl_rng *tau);
 int b2i(bool b);
 int DEnergia(bool A[][N],int n, int m);
-int magn(bool A[][N]);
+double magn(bool A[][N], int M);
 
 int main (void)
 {
-    int M, L, i, j, k, n, m, e, mgn;
+    int M, L, i, j, k, n, m, e;
     bool A[N][N];
-    double b, b0, T, p, sMag, mMag, mag, eT;
+    double b, b0, T, p, sMag, mMag, mgn, eT;
     long double sMag2, varmag;
     ofstream fichO, fichOb, fichG;
 
@@ -56,11 +56,9 @@ int main (void)
             for(j=0;j<N;j++)
                 A[i][j]=true;
 
-
-        //Partimos de una configuración aleatoria
-        //conf_aleat(A,N,tau);
-
-        sMag=sMag2=0.0; //Inicializamos la suma
+        //Inicializamos la suma
+        sMag=0.0;
+        sMag2=0.0; 
         for(i=0;i<pMC;i++)
         {
             //Elegimos un nodo al azar y aplicamos el algoritmo durante 1 pMC
@@ -78,22 +76,21 @@ int main (void)
                  }
             }
             //Sumamos
-            mgn=magn(A);
+            mgn=magn(A,M);
             sMag=sMag+mgn; sMag2=sMag2+mgn*mgn;
         }
 
         //Calculamos la magnetización promedio
         mMag=sMag/pMC;
         varmag=sMag2/pMC-mMag*mMag;
-        mag=mMag/M;
 
         //Calculamos el nuevo exponente crítico
-        b=log(mag)/log(eT);        
+        b=log(mMag)/log(eT);        
 
         //Pasamos los resultados a un fichero
         //fichO.precision(10);
-        fichO << log(eT) << ", " << log(mag) << endl;
-        fichG << T << ", " << mag << ", " << sMag2/pMC << ", " << varmag << ", " << sqrt(varmag/pMC)/M << endl;
+        fichO << log(eT) << ", " << log(mMag) << endl;
+        fichG << T << ", " << mMag << ", " << sMag2/pMC << ", " << varmag << ", " << sqrt(varmag/pMC) << endl;
         fichOb << T << ", " << b << endl;
         
     } while (k<=8);
@@ -167,14 +164,15 @@ int DEnergia(bool A[][N],int n, int m)
 //Función magn: devuelve la magnetización promedio (multiplicada por N^2 por optimización)
 //Argumentos: A[][], matriz con la orientación de los espines.
 //Retorno: valor de la magnetización (por N^2)
-int magn(bool A[][N])
+double magn(bool A[][N], int M)
 {
-    int i,j, sum;
+    int i,j;
+    double sum;
 
-    sum=0;
+    sum=0.0;
     for(i=0;i<N;i++)
         for(j=0;j<N;j++)
             sum=sum+b2i(A[i][j]);
     
-    return abs(sum);
+    return abs(sum)/M;
 }
