@@ -93,7 +93,7 @@ int main (void)
         //Pasamos los resultados a un fichero
         //fichO.precision(10);
         fichO << log(eT) << ", " << log(mag) << endl;
-        fichG << T << ", " << mag << ", " << varmag << ", " << sqrt(varmag/pMC)/M << endl;
+        fichG << T << ", " << mag << ", " << sMag2/pMC << ", " << varmag << ", " << sqrt(varmag/pMC)/M << endl;
         fichOb << T << ", " << b << endl;
         
     } while (k<=8);
