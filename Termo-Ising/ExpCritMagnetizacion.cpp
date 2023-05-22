@@ -10,7 +10,6 @@ using namespace std;
 
 #define N 2048 //Número de nodos del sistema en cada eje
 #define pMC 1e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
-#define tol 1e-4 //Diferencia máxima (en valor absoluto) entre dos valores sucesivos de exponente crítico de la magnetización
 #define Tc 2.26918531421 //Temperatura crítica en las unidades empleadas según: https://en.wikipedia.org/wiki/Square_lattice_Ising_model
 #define errT 0.5 //Paso entre las sucesivas temperaturas consideradas
 
@@ -24,9 +23,9 @@ int main (void)
 {
     int M, L, i, j, k, n, m, e;
     bool A[N][N];
-    double b, b0, T, p, sMag, mMag, mgn, eT;
+    double T, p, sMag, mMag, mgn, eT;
     long double sMag2, varmag;
-    ofstream fichO, fichOb, fichG;
+    ofstream fichO, fichG;
 
     //Para la generación de números aleatorios con GSL
     gsl_rng *tau;
@@ -37,16 +36,13 @@ int main (void)
     //Cálculo de constantes
     M=N*N; L=N-1;
     fichO.open("ln(m)-ln(T-Tc).txt");
-    fichOb.open("exp-crit_magn.txt");
     fichG.open("m-T.txt");
     
-    //Aplicamos el algoritmo de Monte-Carlo hasta alcanzar la precisión indicada
-    b=0;
+    //Aplicamos el algoritmo de Monte-Carlo
     k=0;
-    eT=1.6;
+    eT=0.8;
     do
     {
-        b0=b;
         k++;
         eT=eT*errT;
         T=Tc-eT;
@@ -82,21 +78,14 @@ int main (void)
 
         //Calculamos la magnetización promedio
         mMag=sMag/pMC;
-        varmag=sMag2/pMC-mMag*mMag;
-
-        //Calculamos el nuevo exponente crítico
-        b=log(mMag)/log(eT);        
+        varmag=sMag2/pMC-mMag*mMag;       
 
         //Pasamos los resultados a un fichero
-        //fichO.precision(10);
         fichO << log(eT) << ", " << log(mMag) << endl;
-        fichG << T << ", " << mMag << ", " << sMag2/pMC << ", " << varmag << ", " << sqrt(varmag/pMC) << endl;
-        fichOb << T << ", " << b << endl;
-        
-    } while (k<=8);
+        fichG << T << ", " << mMag << ", " << sqrt(varmag/pMC) << endl;        
+    } while (k<=6);
 
     fichO.close();
-    fichOb.close();
     fichG.close();
 
     return 0;
