@@ -8,7 +8,7 @@
 #include "gsl_rng.h" //Libreria para generación de números aleatorios
 using namespace std;
 
-#define N 32 //Número de nodos del sistema en cada eje
+#define N 64 //Número de nodos del sistema en cada eje
 #define P 16 //Número de puntos que se grafican
 #define pMC 1e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
 #define T1 1.5 //Extremo inferior del intervalo de temperaturas
@@ -18,13 +18,12 @@ using namespace std;
 //Cabecera con todas las funciones que hemos definido
 int b2i(bool b);
 int DEnergia(bool A[][N],int n, int m);
-int corr(bool A[][N], int i);
+double corr(bool A[][N], int i, int M);
 
 int main (void)
 {
-    int M,L, k, i, j1, j2, n,m, e,H, c;
-    long int sC[P], sC2[P];
-    double h, T, p, mC[P], varC[P];
+    int M,L, k, i, j1, j2, n,m, e,H;
+    double h, T, p, c, sC[P], sC2[P], mC[P], varC[P];
     bool A[N][N];
     ofstream fichO;
 
@@ -78,7 +77,7 @@ int main (void)
             //Calculamos la función de correlación en determinados nodos y sumamos
             for(j2=1;j2<P;j2++)
             {
-                c=corr(A,j2*H);
+                c=corr(A,j2*H,M);
                 sC[j2]=sC[j2]+c;
                 sC2[j2]=sC2[j2]+c*c;
             }
@@ -87,12 +86,10 @@ int main (void)
         for(j2=1;j2<P;j2++)
         {
             i=j2*H;
-            mC[j2]=sC[j2]*1.0/pMC;
-            varC[j2]=sC2[j2]*1.0/pMC-mC[j2]*mC[j2];
-            mC[j2]=mC[j2]/M;
-            varC[j2]=sqrt(varC[j2]/pMC)/M;
+            mC[j2]=sC[j2]/pMC;
+            varC[j2]=sqrt((sC2[j2]/pMC-mC[j2]*mC[j2])/pMC);
 
-            fichO << i << ", " << mC[j2] << ", " << 1.96*varC[j2] << ", " << log(i*mC[j2]) << ", " << 1.96*varC[j2]/mC[j2] << endl;
+            fichO << i << ", " << mC[j2] << ", " << 1.96*varC[j2] << ", " << log(i*abs(mC[j2])) << ", " << 1.96*varC[j2]/abs(mC[j2]) << endl;
         }   
         fichO << endl;
         T=T+h;
@@ -148,7 +145,7 @@ int DEnergia(bool A[][N],int n, int m)
 //Función corr: devuelve la correlación (multiplicada por N^2 por optimización)
 //Argumentos: A[][], matriz con la orientación de los espines; i, entrada de la función correlación
 //Retorno: valor de la correlación
-int corr(bool A[][N], int i)
+double corr(bool A[][N], int i, int M)
 {
     int sum, m,n,u;
 
@@ -172,5 +169,5 @@ int corr(bool A[][N], int i)
         }
     }
     
-    return sum;
+    return sum*1.0/M;
 }
