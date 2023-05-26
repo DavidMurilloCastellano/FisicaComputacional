@@ -8,13 +8,13 @@
 #include "gsl_rng.h" //Libreria para generación de números aleatorios
 using namespace std;
 
-#define N 2048 //Número de nodos del sistema en cada eje
+#define N 64 //Número de nodos del sistema en cada eje
 #define P 32 //Número de puntos que se grafican
 #define pMC 1e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
-#define T1 1.87 //Extremo inferior del intervalo de temperaturas
-#define T2 2.257 //Extremo superior del intervalo de temperaturas
+#define T1 1.5 //Extremo inferior del intervalo de temperaturas
+#define T2 3.5 //Extremo superior del intervalo de temperaturas
 #define Tc 2.26918531421 //Temperatura crítica en las unidades empleadas según: https://en.wikipedia.org/wiki/Square_lattice_Ising_model
-#define nT 6 //Número de valores de temperatura que se van a considerar en el intervalo [T1,T2]
+#define nT 10 //Número de valores de temperatura que se van a considerar en el intervalo [T1,T2]
 
 //Cabecera con todas las funciones que hemos definido
 int b2i(bool b);
@@ -23,7 +23,7 @@ double corr(bool A[][N], int i, int M);
 
 int main (void)
 {
-    int M,L, k, i, j1, j2, n,m, e,H;
+    int M,L, k, i, j1, j2, n,m, e,H,u;
     double h, T, p, c, sC[P], sC2[P], mC[P], varC[P];
     bool A[N][N];
     ofstream fichO;
@@ -84,10 +84,13 @@ int main (void)
             }
         }
         //Promediamos en cada nodo y pasamos a un fichero
-        for(j2=1;j2<P;j2++)
+        u=P/2;
+        for(j2=1;j2<=u;j2++)
         {
             i=j2*H;
+            sC[j2]=(sC[j2]+sC[P-j2])/2; //Tenemos en cuenta las condiciones de contorno periódicas
             mC[j2]=sC[j2]/pMC;
+            sC2[j2]=(sC2[j2]+sC2[P-j2])/2; //Tenemos en cuenta las condiciones de contorno periódicas
             varC[j2]=sqrt((sC2[j2]/pMC-mC[j2]*mC[j2])/pMC);
 
             fichO << i << ", " << mC[j2] << ", " << 1.96*varC[j2] << ", " << log(i*abs(mC[j2])) << ", " << 1.96*varC[j2]/abs(mC[j2]) << endl;
