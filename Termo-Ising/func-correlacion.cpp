@@ -8,7 +8,7 @@
 #include "gsl_rng.h" //Libreria para generación de números aleatorios
 using namespace std;
 
-#define N 16 //Número de nodos del sistema en cada eje
+#define N 32 //Número de nodos del sistema en cada eje
 #define P 16 //Número de puntos que se grafican
 #define pMC 1e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
 #define T1 1.5 //Extremo inferior del intervalo de temperaturas
@@ -26,7 +26,7 @@ int main (void)
     long int sC[P], sC2[P];
     double h, T, p, mC[P], varC[P];
     bool A[N][N];
-    ofstream fichO, fichOf;
+    ofstream fichO;
 
     //Para la generación de números aleatorios con GSL
     gsl_rng *tau;
@@ -37,7 +37,6 @@ int main (void)
     //Cálculo de constantes
     M=N*N; L=N-1;
     fichO.open("correlacion-N="+to_string(N)+".txt");
-    fichOf.open("fit_correlacion-N="+to_string(N)+".txt");
 
     //El algoritmo se ejecuta para cada una de las temperaturas consideradas
     h=(T2-T1)/(nT-1); 
@@ -45,14 +44,15 @@ int main (void)
     H=N/P;
     for(k=0; k<nT; k++)
     {
-        
+        //Escribimos la temperatura en ambos ficheros
+        fichO << T << endl;
         //Partimos de una configuración ordenada
         for(j1=0;j1<N;j1++)
             for(j2=0;j2<N;j2++)
                 A[j1][j2]=true;
 
         //Inicializamos la suma
-        for(j1=0;j1<P;j1++)
+        for(j1=1;j1<P;j1++)
         {
             sC[j1]=0;
             sC2[j1]=0; 
@@ -76,7 +76,7 @@ int main (void)
             }
 
             //Calculamos la función de correlación en determinados nodos y sumamos
-            for(j2=0;j2<P;j2++)
+            for(j2=1;j2<P;j2++)
             {
                 c=corr(A,j2*H);
                 sC[j2]=sC[j2]+c;
@@ -84,7 +84,7 @@ int main (void)
             }
         }
         //Promediamos en cada nodo y pasamos a un fichero
-        for(j2=0;j2<P;j2++)
+        for(j2=1;j2<P;j2++)
         {
             i=j2*H;
             mC[j2]=sC[j2]*1.0/pMC;
@@ -92,14 +92,13 @@ int main (void)
             mC[j2]=mC[j2]/M;
             varC[j2]=sqrt(varC[j2]/pMC)/M;
 
-            fichO << i << ", " << mC[j2] << ", " << 1.96*varC[j2] << endl;
-            fichOf << i << ", " << log(i*mC[j2]) << ", " << 1.96*varC[j2]/mC[j2] << endl;
+            fichO << i << ", " << mC[j2] << ", " << 1.96*varC[j2] << ", " << log(i*mC[j2]) << ", " << 1.96*varC[j2]/mC[j2] << endl;
         }   
+        fichO << endl;
         T=T+h;
     }
 
     fichO.close();
-    fichOf.close();
 
     return 0;
 }
