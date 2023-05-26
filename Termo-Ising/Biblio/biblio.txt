@@ -1,1 +1,3 @@
 https://en.wikipedia.org/wiki/Square_lattice_Ising_model
+https://es.wikipedia.org/wiki/Exponente_cr%C3%ADtico
+http://www.fisica.unlp.edu.ar/academica/Members/rossigno/TD%20-%20Juan%20Muglia.pdf

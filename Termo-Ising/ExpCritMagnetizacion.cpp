@@ -14,7 +14,6 @@ using namespace std;
 #define errT 0.5 //Paso entre las sucesivas temperaturas consideradas
 
 //Cabecera con todas las funciones que hemos definido
-void conf_aleat(bool A[][N],int n, gsl_rng *tau);
 int b2i(bool b);
 int DEnergia(bool A[][N],int n, int m);
 double magn(bool A[][N], int M);
@@ -82,7 +81,7 @@ int main (void)
 
         //Pasamos los resultados a un fichero
         fichO << log(eT) << ", " << log(mMag) << endl;
-        fichG << T << ", " << mMag << ", " << sqrt(varmag/pMC) << endl;        
+        fichG << T << ", " << mMag << ", " << 1.96*sqrt(varmag/pMC) << endl;        
     } while (k<=6);
 
     fichO.close();
@@ -91,22 +90,6 @@ int main (void)
     return 0;
 }
 
-
-//Función conf_aleat: genera una distribución aleatoria de espines para la configuración inicial del sistema
-//Argumentos: A[][N], matriz con la configuración inicial (T=1; F=-1); n, número de nodos por eje
-void conf_aleat(bool A[][N],int n, gsl_rng *tau)
-{
-    int i,j;
-
-    for(i=0;i<n;i++)
-        for(j=0;j<n;j++)
-            if(gsl_rng_uniform_int(tau,2)==0)
-                A[i][j]=true;
-            else
-                A[i][j]=false;
-
-    return;
-}
 
 //Función b2i: devuelve 1 si el booleano es true y -1 si es false
 //Argumentos: b, variable booleana que se desea transformar
