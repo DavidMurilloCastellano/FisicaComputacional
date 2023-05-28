@@ -1,3 +1,4 @@
 https://en.wikipedia.org/wiki/Square_lattice_Ising_model
 https://es.wikipedia.org/wiki/Exponente_cr%C3%ADtico
 http://www.fisica.unlp.edu.ar/academica/Members/rossigno/TD%20-%20Juan%20Muglia.pdf
+https://physics.stackexchange.com/questions/59678/what-is-the-definition-of-correlation-length-for-the-ising-model

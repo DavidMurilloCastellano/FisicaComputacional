@@ -8,16 +8,17 @@
 using namespace std;
 
 #define Pi 3.14159265358979 //Valor del número Pi
-#define N 20 //Número de átomos que conforman nuestro sistema
-#define L 10 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada considerada
+#define N 16 //Número de átomos que conforman nuestro sistema
+#define L 4 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada
 #define s 2e-3 //Paso con el que se aplica el algoritmo
-#define S 50 //Límite de tiempo hasta el que se considera la simulación
+#define S 1e-4 //Límite de tiempo hasta el que se considera la simulación
 #define D 2 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
-#define R 1e-2 //Separación mínimia inicial entre cada par de partículas
-#define E true //Indica si se desea calcular o no la energía del sistema
+#define R 0.1 //Separación mínimia inicial entre cada par de partículas
+#define E false //Indica si se desea calcular o no la energía del sistema
 
 //Cabecera con todas las funciones que hemos definido
-void cond_iniciales(int n);
+void cond_inic_aleatorio(int n);
+void cond_inic_panal(int n);
 double dist(double x[], double y[]);
 bool ac(double a[][2], double r[][2], int n, double& V);
 void rh(double r[][2], double v[][2], double a[][2], double h, int n);
@@ -33,7 +34,8 @@ int main(void)
     ofstream fichOPos, fichOE;
     bool div;
     //Generamos aleatoriamente las condiciones iniciales
-    //cond_iniciales(N);
+    //cond_inic_aleatorio(N);
+    cond_inic_panal(N);
 
     //Copiamos las velocidades y posiciones iniciales aleatorias
     fichIn.open("pos-vel_iniciales.txt");
@@ -114,17 +116,17 @@ int main(void)
     fichOE.close();
 
     //Calculamos la temperatura en el intervalo especificado en el guion
-    cout << temp(20,50,N);
+    //cout << temp(20,50,N);
 
     return 0;
 }
 
 
-//Función cond_iniciales: genera de forma aleatoria las posiciones y velocidades iniciales de las partículas en la
+//Función cond_inic_aleatorio: genera de forma aleatoria las posiciones y velocidades iniciales de las partículas en la
 //caja. Escribe dicha información en el fichero "pos-vel_iniciales.txt" según: en cada línea se escribe posición en
 //X, posición en Y, velocidad en X, velocidad en Y
 //Argumentos: n, número de partículas
-void cond_iniciales(int n)
+void cond_inic_aleatorio(int n)
 {
     int i,j,k;
     double v,p,l,r[N][2],r1[2],r2[2];
@@ -175,6 +177,35 @@ void cond_iniciales(int n)
     return;
 }
 
+//Función cond_inic_panal: inicia las posiciones de las partículas en la caja (rectangular de altura L) y en reposo.
+//Escribe dicha información en el fichero "pos-vel_iniciales.txt" según: en cada línea se escribe posición en
+//X, posición en Y, velocidad en X, velocidad en Y
+//Argumentos: n, número de partículas
+void cond_inic_panal(int n)
+{
+    int H, i;
+    double l, a, b;
+    ofstream fichOut;
+
+    l=L/3.0;
+    a=l*sqrt(3)/2;
+    b=l/2;
+    H=n/4;
+    fichOut.open("pos-vel_iniciales.txt");
+
+    for(i=0;i<H; i++)
+    {
+        fichOut << a*(2*i+1) << " " << 0.0 << " " << 0.0 << " " << 0.0 << endl;
+        fichOut << 2*a*i << " " << b << " " << 0.0 << " " << 0.0 << endl;
+        fichOut << 2*a*i << " " << b+l << " " << 0.0 << " " << 0.0 << endl;
+        fichOut << a*(2*i+1) << " " << 2*l << " " << 0.0 << " " << 0.0 << endl;
+    }
+
+
+    fichOut.close();   
+    return;
+}
+
 //Función dist: calcula la distancia entre dos puntos de la caja teniendo en cuenta las condiciones de contorno
 //periódicas.
 //Argumentos: x, y; vectores de 2-dim que contienen las coordenadas de cada punto.
@@ -207,8 +238,6 @@ double dist(double x[], double y[])
     return d;
 }
 
-//Función modulo: devuelve el modulo de un 
-
 //Función ac: calcula la aceleración a la que está sometida cada partícula en un instante determinado a partir
 //del potencial de Lennard-Jones. Para optimizar, calcula también la energía potencial del sistema
 //Argumentos: a,r; matrices de aceleración y posición de cada partícula en el instante considerado, respect.;
@@ -229,10 +258,10 @@ bool ac(double a[][2], double r[][2], int n, double& V)
 
     for(i=0;i<n;i++)
     {
-        r1[0]=r[i][0]; r1[1]=r[i][1];
         for(j=i+1;j<n;j++)
         {
-            r2[0]=r[j][0]; r2[1]=r[j][1];
+            r1[0]=r[i][0]; r1[1]=r[i][1]; //Para volver a tomar la posición real de la partícula que puede haberse
+            r2[0]=r[j][0]; r2[1]=r[j][1]; //modificado por la función dist
             d=dist(r1,r2);
             if(d<1e-18) //Comprobamos que no dividimos entre 0
             {

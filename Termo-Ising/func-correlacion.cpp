@@ -8,13 +8,13 @@
 #include "gsl_rng.h" //Libreria para generación de números aleatorios
 using namespace std;
 
-#define N 2048 //Número de nodos del sistema en cada eje
-#define P 64 //Número de puntos que se grafican
+#define N 64 //Número de nodos del sistema en cada eje
+#define P 32 //Número de puntos que se grafican
 #define pMC 1e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
-#define T1 1.87 //Extremo inferior del intervalo de temperaturas
-#define T2 2.257 //Extremo superior del intervalo de temperaturas
+#define T1 1.5 //Extremo inferior del intervalo de temperaturas
+#define T2 3.5 //Extremo superior del intervalo de temperaturas
 #define Tc 2.26918531421 //Temperatura crítica en las unidades empleadas según: https://en.wikipedia.org/wiki/Square_lattice_Ising_model
-#define nT 6 //Número de valores de temperatura que se van a considerar en el intervalo [T1,T2]
+#define nT 10 //Número de valores de temperatura que se van a considerar en el intervalo [T1,T2]
 
 //Cabecera con todas las funciones que hemos definido
 int b2i(bool b);
@@ -147,31 +147,49 @@ int DEnergia(bool A[][N],int n, int m)
 }
 
 //Función corr: devuelve la correlación (multiplicada por N^2 por optimización)
-//Argumentos: A[][], matriz con la orientación de los espines; i, entrada de la función correlación
+//Argumentos: A[][], matriz con la orientación de los espines; i, entrada de la función correlación; M, número de
+//nodos total del sistema
 //Retorno: valor de la correlación
 double corr(bool A[][N], int i, int M)
 {
-    int sum, m,n,u;
+    int sum, aux1, aux2, m,n,u,j,k;
 
-    sum=0; u=N-1;
+    sum=aux1=aux2=0; u=N-1;
     if(0<=i && i<=u)
     {
         u=u-i;
         for(m=0;m<N;m++)
         {
             for(n=0;n<=u;n++)
+            {
+                j=b2i(A[n][m]); k=b2i(A[n+i][m]);
+                aux1=aux1+j;
+                aux2=aux2+k;
+                sum=sum+j*k;
+                /*
                 if(A[n][m]==A[n+i][m])
                     sum=sum+1;
                 else
                     sum=sum-1;
+                */
+            }
+                
 
             for(n=u+1;n<N;n++)
+            {
+                j=b2i(A[n][m]); k=b2i(A[n+i-N][m]);
+                aux1=aux1+j;
+                aux2=aux2+k;
+                sum=sum+j*k;
+                /*
                 if(A[n][m]==A[n+i-N][m])
                     sum=sum+1;
                 else
                     sum=sum-1;
+                */
+            }
         }
     }
     
-    return sum*1.0/M;
+    return (sum-1.0*aux1*aux2/M)/M;
 }
