@@ -9,7 +9,7 @@
 using namespace std;
 
 #define N 2048 //Número de nodos del sistema en cada eje
-#define P 32 //Número de puntos que se grafican
+#define P 64 //Número de puntos que se grafican
 #define pMC 1e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
 #define T1 1.87 //Extremo inferior del intervalo de temperaturas
 #define T2 2.257 //Extremo superior del intervalo de temperaturas
