@@ -8,13 +8,13 @@
 using namespace std;
 
 #define Pi 3.14159265358979 //Valor del número Pi
-#define N 16 //Número de átomos que conforman nuestro sistema
-#define L 4 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada
-#define s 2e-3 //Paso con el que se aplica el algoritmo
-#define S 1e-4 //Límite de tiempo hasta el que se considera la simulación
-#define D 2 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
-#define R 0.1 //Separación mínimia inicial entre cada par de partículas
-#define E false //Indica si se desea calcular o no la energía del sistema
+#define N 20 //Número de átomos que conforman nuestro sistema
+#define L 10 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada
+#define s 1e-3 //Paso con el que se aplica el algoritmo
+#define S 2 //Límite de tiempo hasta el que se considera la simulación
+#define D 10 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
+#define R 0.5 //Separación mínimia inicial entre cada par de partículas
+#define E true //Indica si se desea calcular o no la energía del sistema
 
 //Cabecera con todas las funciones que hemos definido
 void cond_inic_aleatorio(int n);
@@ -34,8 +34,8 @@ int main(void)
     ofstream fichOPos, fichOE;
     bool div;
     //Generamos aleatoriamente las condiciones iniciales
-    //cond_inic_aleatorio(N);
-    cond_inic_panal(N);
+    cond_inic_aleatorio(N);
+    //cond_inic_panal(N);
 
     //Copiamos las velocidades y posiciones iniciales aleatorias
     fichIn.open("pos-vel_iniciales.txt");
@@ -181,6 +181,8 @@ void cond_inic_aleatorio(int n)
 //Escribe dicha información en el fichero "pos-vel_iniciales.txt" según: en cada línea se escribe posición en
 //X, posición en Y, velocidad en X, velocidad en Y
 //Argumentos: n, número de partículas
+
+//REVISAR
 void cond_inic_panal(int n)
 {
     int H, i;
@@ -209,7 +211,7 @@ void cond_inic_panal(int n)
 //Función dist: calcula la distancia entre dos puntos de la caja teniendo en cuenta las condiciones de contorno
 //periódicas.
 //Argumentos: x, y; vectores de 2-dim que contienen las coordenadas de cada punto.
-//Retorno: d, distancia al cubo entre los puntos dados
+//Retorno: d, distancia entre los puntos dados
 double dist(double x[], double y[])
 {
     double d,a,b;
@@ -241,8 +243,7 @@ double dist(double x[], double y[])
 //Función ac: calcula la aceleración a la que está sometida cada partícula en un instante determinado a partir
 //del potencial de Lennard-Jones. Para optimizar, calcula también la energía potencial del sistema
 //Argumentos: a,r; matrices de aceleración y posición de cada partícula en el instante considerado, respect.;
-//n, número de partículas del sistema; E, indica si se quiere calcular la energía potencial; V; energía potencial
-//del sistema.
+//n, número de partículas del sistema; V; energía potencial del sistema.
 //Retorno: verdadero si la distancia (denominador) no es nulo, falso en caso contrario
 bool ac(double a[][2], double r[][2], int n, double& V)
 {

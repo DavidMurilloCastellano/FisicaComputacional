@@ -11,10 +11,10 @@ using namespace std;
 #define N 2048 //Número de nodos del sistema en cada eje
 #define P 64 //Número de puntos que se grafican
 #define pMC 1e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
-#define T1 2.22 //Extremo inferior del intervalo de temperaturas
-#define T2 2.24 //Extremo superior del intervalo de temperaturas
+#define T1 1.87 //Extremo inferior del intervalo de temperaturas
+#define T2 2.2567 //Extremo superior del intervalo de temperaturas
 #define Tc 2.26918531421 //Temperatura crítica en las unidades empleadas según: https://en.wikipedia.org/wiki/Square_lattice_Ising_model
-#define nT 2 //Número de valores de temperatura que se van a considerar en el intervalo [T1,T2]
+#define nT 6 //Número de valores de temperatura que se van a considerar en el intervalo [T1,T2]
 
 //Cabecera con todas las funciones que hemos definido
 int b2i(bool b);
