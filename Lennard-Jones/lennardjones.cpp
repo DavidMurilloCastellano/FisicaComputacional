@@ -13,7 +13,7 @@ using namespace std;
 #define s 2e-4 //Paso con el que se aplica el algoritmo
 #define S 50 //Límite de tiempo hasta el que se considera la simulación
 #define D 100 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
-#define R 0.5 //Separación mínimia inicial entre cada par de partículas
+#define R 1 //Separación mínimia inicial entre cada par de partículas
 #define E true //Indica si se desea calcular o no la energía del sistema
 
 //Cabecera con todas las funciones que hemos definido
@@ -24,15 +24,17 @@ bool ac(double a[][2], double r[][2], int n, double& V);
 void rh(double r[][2], double v[][2], double a[][2], double h, int n);
 void vh(double v[][2], double a[][2], double h, int n);
 double temp(float a, float b,int n);
+void HistVel(float a, float b, int n);
 
 
 int main(void)
 {
     int i,j,k;
-    double a[N][2], r[N][2], v[N][2], h, T, V;
+    double a[N][2], r[N][2], v[N][2], v2, h, T, V;
     ifstream fichIn;
-    ofstream fichOPos, fichOE, fichOT;
+    ofstream fichOPos, fichOVel, fichOE, fichOT;
     bool div;
+/*
     //Generamos aleatoriamente las condiciones iniciales
     //cond_inic_aleatorio(N);
     //cond_inic_panal(N);
@@ -54,6 +56,7 @@ int main(void)
     fichIn.close();
 
     fichOPos.open("particulas_posiciones.txt");
+    fichOVel.open("particulas_velocidades.txt");
     fichOE.open("particulas_energias.txt");
     //Comprobamos que el número de partículas coincide con la cantidad de datos leídos
     if(i!=N)
@@ -62,15 +65,19 @@ int main(void)
     {
         h=s; k=1;
         fichOPos.precision(6); 
+        fichOVel.precision(6);
         T=V=0.0;
-        //Volcamos las posiciones iniciales
+        //Volcamos las posiciones y velocidades iniciales
+        fichOVel << "0.00" << endl;
         for(i=0;i<N;i++)
         {
+            v2=v[i][0]*v[i][0]+v[i][1]*v[i][1];
             fichOPos << r[i][0] << ", " << r[i][1] << endl;
+            fichOVel << v[i][0] << " " << v[i][1] << endl;
 
             //Calculamos la energía cinética inicial
             if(E)
-                T=T+(v[i][0]*v[i][0]+v[i][1]*v[i][1])/2;
+                T=T+v2/2;
         }
         fichOPos << endl;
         fichOE << "0.00 " << T << " ";
@@ -90,18 +97,19 @@ int main(void)
 
             if(k%D==0) //No pasamos todas las posiciones a la simulación
             {
+                fichOVel << h << endl;
+                T=0.0;
                 for(i=0;i<N;i++)
-                    fichOPos << r[i][0] << ", " << r[i][1] << endl;
-                fichOPos << endl;
-
-                //Escribimos las energías
-                if(E)
                 {
-                    T=0.0;
-                    for(i=0;i<N;i++)
-                        T=T+(v[i][0]*v[i][0]+v[i][1]*v[i][1])/2;
-                    fichOE << h << " " << T << " " << V << " " << T+V << endl;
+                    v2=v[i][0]*v[i][0]+v[i][1]*v[i][1];
+                    fichOPos << r[i][0] << ", " << r[i][1] << endl;
+                    fichOVel << v[i][0] << " " << v[i][1] << endl;
+                    if(E)
+                        T=T+v2/2;
                 }
+                fichOPos << endl;
+                if(E)
+                    fichOE << h << " " << T << " " << V << " " << T+V << endl;
             }
 
             h=h+s; k++;
@@ -113,13 +121,16 @@ int main(void)
     }    
 
     fichOPos.close();
+    fichOVel.close();
     fichOE.close();
-
+*/
     //Calculamos la temperatura en el intervalo especificado en el guion
     fichOT.open("particulas_temperaturas.txt");
     fichOT << "Temperatura media del sistema en el intervalo de tiempo dado: " << temp(20,50,N);
-
     fichOT.close();
+
+    //Histograma de velocidades
+    //HistVel(20,50,N);
 
     return 0;
 }
@@ -369,7 +380,7 @@ double temp(float a, float b,int n)
             while(h<a)
                 for(i=0;i<4;i++) //Descartamos los datos que no nos interesan
                     fichIn >> h;
-            while(h<=b)
+            while(h<=b && !fichIn.eof())
             {
                 fichIn >> aux;
                 for(i=0;i<3;i++) //Descartamos los datos que no nos interesan
@@ -384,4 +395,146 @@ double temp(float a, float b,int n)
     fichIn.close();
 
     return t;
+}
+
+//Función HistVel: pasa a un fichero la distribución relativa de las partículas según el promedio, en el instante
+//de tiempo especificado, de la velocidad que llevan en cada componente y el módulo.
+//Argumentos:
+void HistVel(float a, float b, int n)
+{
+    float t, vMx, vMy, vMm, aux, lx, ly, lm, vx[N], vy[N], vm[N];
+    int i, j, M, v[N];
+    ifstream fichIn;
+    ofstream fichOut;
+
+    //Iniciamos los datos
+    t=0.0;
+    vMx=vMy=vMm=0.0;
+    for(i=0;i<n;i++)
+    {
+        vx[i]=vy[i]=0.0;
+    }
+    fichIn.open("particulas_velocidades.txt");
+    fichOut.open("histograma-velocidades.txt");
+
+    if(a>=0 && b<=S && a<b) //Se comprueba que los límites están dentro del rango de tiempo calculado
+    {
+        if(!fichIn.is_open())
+            t=0.0;
+        else
+        {
+            fichIn >> t;
+            while(t<a)
+            {
+                for(i=0;i<n;i++) //Descartamos los datos que no nos interesan
+                    for(j=0;j<1;j++)
+                        fichIn >> t;
+                fichIn >> t;
+            }
+            
+            while(t<=b && !fichIn.eof())
+            {
+                for(i=0;i<n; i++)
+                {
+                    fichIn >> aux;
+                    vx[i]=vx[i]+aux;
+
+                    fichIn >> aux;
+                    vy[i]=vy[i]+aux;
+                }
+
+                if(!fichIn.eof())
+                    fichIn >> t;             
+            }
+
+            //Calculamos el promedio de la velocidad de cada partícula y el vector con el promedio del módulo de
+            //la velocidad de cada partícula
+            M=floor((b-a)/(s*D))+1;
+            for(i=0;i<n;i++)
+            {
+                vx[i]=vx[i]/M;
+                vy[i]=vy[i]/M;
+                vm[i]=sqrt(vx[i]*vx[i]+vy[i]*vy[i]);
+            }
+
+            //Calculamos el máximo de cada vector para poder hacer equiparticiones de cada intervalo
+            vMx=abs(vx[0]);
+            vMy=abs(vy[0]);
+            vMm=vm[0];
+            for(i=1;i<n;i++)
+            {
+                if(abs(vx[i])>vMx)
+                    vMx=abs(vx[i]);
+                if(abs(vy[i])>vMy)
+                    vMy=abs(vy[i]);
+                if(vm[i]>vMm)
+                    vMm=vm[i];
+            }
+
+            lx=2*vMx/n; ly=2*vMy/n; //Hay valores positivos y negativos
+            lm=vMm/n;
+
+            //Contamos cuántas partículas hay en cada subintervalo de velocidades
+
+            //Iniciamos el vector con el que vamos a contar
+            for(i=0;i<n;i++)
+                v[i]=0;
+            //Eje X
+            for(i=0;i<n;i++)
+            {
+                aux=vx[i]+vMx;
+                j=floor(aux/lx);
+                if(j>=n)
+                    j=n-1;
+                if(j<0)
+                    j=0;
+                v[j]++;
+            }
+            //Pasamos al fichero la información obtenida
+            for(i=0;i<n;i++)
+                fichOut << lx*(i+1/2)-vMx << ", " << (v[i]*1.0)/n << endl;
+            fichOut << endl;
+
+
+            //Iniciamos el vector con el que vamos a contar
+            for(i=0;i<n;i++)
+                v[i]=0;
+            //Eje Y
+            for(i=0;i<n;i++)
+            {
+                aux=vy[i]+vMy;
+                j=floor(aux/ly);
+                if(j>=n)
+                    j=n-1;
+                if(j<0)
+                    j=0;
+                v[j]++;
+            }
+            //Pasamos al fichero la información obtenida
+            for(i=0;i<n;i++)
+                fichOut << ly*(i+1/2)-vMy << ", " << (v[i]*1.0)/n << endl;
+            fichOut << endl;
+
+
+            //Iniciamos el vector con el que vamos a contar
+            for(i=0;i<n;i++)
+                v[i]=0;
+            //Módulo
+            for(i=0;i<n;i++)
+            {
+                j=floor(vm[i]/lm);
+                if(j>=n)
+                    j=n-1;
+                v[j]++;
+            }
+            //Pasamos al fichero la información obtenida
+            for(i=0;i<n;i++)
+                fichOut << lm*(i+1/2) << ", " << (v[i]*1.0)/n << endl;
+            fichOut << endl;
+
+        }
+    }
+    fichOut.close();
+
+    return;
 }
