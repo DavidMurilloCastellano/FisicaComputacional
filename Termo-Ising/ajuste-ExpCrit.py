@@ -23,7 +23,6 @@ def func2(x,a,b):
 with open(file_in1, "r") as f:
     data_str = f.read()
 
-# Inicializa la lista con los datos de cada valor de temperatura.
 # frames_data[j] contiene los datos del valor de temperatura j-ésimo
 frames_data = list()
 # Almacena toda la información en un array de numpy

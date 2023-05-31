@@ -10,9 +10,9 @@ using namespace std;
 #define Pi 3.14159265358979 //Valor del número Pi
 #define N 20 //Número de átomos que conforman nuestro sistema
 #define L 10 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada
-#define s 1e-3 //Paso con el que se aplica el algoritmo
-#define S 2 //Límite de tiempo hasta el que se considera la simulación
-#define D 10 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
+#define s 2e-4 //Paso con el que se aplica el algoritmo
+#define S 50 //Límite de tiempo hasta el que se considera la simulación
+#define D 100 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
 #define R 0.5 //Separación mínimia inicial entre cada par de partículas
 #define E true //Indica si se desea calcular o no la energía del sistema
 
@@ -31,10 +31,10 @@ int main(void)
     int i,j,k;
     double a[N][2], r[N][2], v[N][2], h, T, V;
     ifstream fichIn;
-    ofstream fichOPos, fichOE;
+    ofstream fichOPos, fichOE, fichOT;
     bool div;
     //Generamos aleatoriamente las condiciones iniciales
-    cond_inic_aleatorio(N);
+    //cond_inic_aleatorio(N);
     //cond_inic_panal(N);
 
     //Copiamos las velocidades y posiciones iniciales aleatorias
@@ -42,8 +42,8 @@ int main(void)
     i=0;
     while(!fichIn.eof() && i<N)
     {
-        if(!fichIn.is_open())
-            cout << "Error al abrir el fichero";
+        //if(!fichIn.is_open())
+            //cout << "Error al abrir el fichero";
 
         fichIn >> r[i][0];
         fichIn >> r[i][1];
@@ -73,7 +73,7 @@ int main(void)
                 T=T+(v[i][0]*v[i][0]+v[i][1]*v[i][1])/2;
         }
         fichOPos << endl;
-        fichOE << "0.0000 " << T << " ";
+        fichOE << "0.00 " << T << " ";
 
         //Calculamos las aceleraciones (y energía potencial) iniciales
         div=ac(a,r,N,V);
@@ -116,7 +116,10 @@ int main(void)
     fichOE.close();
 
     //Calculamos la temperatura en el intervalo especificado en el guion
-    //cout << temp(20,50,N);
+    fichOT.open("particulas_temperaturas.txt");
+    fichOT << "Temperatura media del sistema en el intervalo de tiempo dado: " << temp(20,50,N);
+
+    fichOT.close();
 
     return 0;
 }
