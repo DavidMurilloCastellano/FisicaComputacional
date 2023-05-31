@@ -48,7 +48,7 @@ import numpy as np
 # Parámetros
 # ========================================
 file_in = "particulas_posiciones.txt" # Nombre del fichero de datos CAMBIAR "particulas_posiciones.txt"
-file_out = "josemi" # Nombre del fichero de salida (sin extensión)
+file_out = "particulas-20" # Nombre del fichero de salida (sin extensión)
 
 # Límites de los ejes X e Y.
 x_min = 0
@@ -56,7 +56,7 @@ x_max = 10
 y_min = 0
 y_max = 10
 
-interval = 30 # Tiempo entre fotogramas en milisegundos
+interval = 50 # Tiempo entre fotogramas en milisegundos
 show_trail = False # Muestra la "estela" del planeta
 trail_width = 1 # Ancho de la estela
 save_to_file = True # False: muestra la animación por pantalla,
