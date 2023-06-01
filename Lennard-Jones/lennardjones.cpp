@@ -23,7 +23,7 @@ double dist(double x[], double y[]);
 bool ac(double a[][2], double r[][2], int n, double& V);
 void rh(double r[][2], double v[][2], double a[][2], double h, int n);
 void vh(double v[][2], double a[][2], double h, int n);
-double temp(float a, float b,int n);
+void temp(float a, float b,int n);
 void HistVel(float a, float b, int n);
 
 
@@ -32,9 +32,9 @@ int main(void)
     int i,j,k;
     double a[N][2], r[N][2], v[N][2], v2, h, T, V;
     ifstream fichIn;
-    ofstream fichOPos, fichOVel, fichOE, fichOT;
+    ofstream fichOPos, fichOVel, fichOE;
     bool div;
-/*
+
     //Generamos aleatoriamente las condiciones iniciales
     //cond_inic_aleatorio(N);
     //cond_inic_panal(N);
@@ -73,7 +73,7 @@ int main(void)
         {
             v2=v[i][0]*v[i][0]+v[i][1]*v[i][1];
             fichOPos << r[i][0] << ", " << r[i][1] << endl;
-            fichOVel << v[i][0] << " " << v[i][1] << endl;
+            fichOVel << v[i][0] << " " << v[i][1] << " " << sqrt(v2) << endl;
 
             //Calculamos la energía cinética inicial
             if(E)
@@ -103,7 +103,7 @@ int main(void)
                 {
                     v2=v[i][0]*v[i][0]+v[i][1]*v[i][1];
                     fichOPos << r[i][0] << ", " << r[i][1] << endl;
-                    fichOVel << v[i][0] << " " << v[i][1] << endl;
+                    fichOVel << v[i][0] << " " << v[i][1] << " " << sqrt(v2) << endl;
                     if(E)
                         T=T+v2/2;
                 }
@@ -123,14 +123,12 @@ int main(void)
     fichOPos.close();
     fichOVel.close();
     fichOE.close();
-*/
+
     //Calculamos la temperatura en el intervalo especificado en el guion
-    fichOT.open("particulas_temperaturas.txt");
-    fichOT << "Temperatura media del sistema en el intervalo de tiempo dado: " << temp(20,50,N);
-    fichOT.close();
+    temp(20,50,N);
 
     //Histograma de velocidades
-    //HistVel(20,50,N);
+    HistVel(20,50,N);
 
     return 0;
 }
@@ -358,17 +356,19 @@ void vh(double v[][2], double a[][2], double h, int n)
 }
 
 //Función temp: calcula la temperatura media del sistema en un intervalo de tiempo. Para ello, lee los datos de
-//energía cinética del sistema del fichero "particulas_energias.txt"
+//energía cinética del sistema del fichero "particulas_energias.txt" y escribe la temperatura obtenida en
+//particulas_temperatura.txt.
 //Argumentos: a,b, extremos del intervalo en el que se calcula la temperatura; n, número de partículas del sistema; 
-//Retorno:t, temperatura media del sistema
-double temp(float a, float b,int n)
+void temp(float a, float b,int n)
 {
     double t,aux,h;
     int i;
     ifstream fichIn;
+    ofstream fichOut;
 
     t=0.0;
     fichIn.open("particulas_energias.txt");
+    fichOut.open("particulas_temperatura.txt");
 
     if(a>=0 && b<=S && a<b) //Se comprueba que los límites están dentro del rango de tiempo calculado
     {
@@ -391,10 +391,13 @@ double temp(float a, float b,int n)
                                             //en [a,b]) 
         }
     }
+
+    fichOut << t;
     
     fichIn.close();
+    fichOut.close();
 
-    return t;
+    return;
 }
 
 //Función HistVel: pasa a un fichero la distribución relativa de las partículas según el promedio, en el instante
@@ -412,7 +415,7 @@ void HistVel(float a, float b, int n)
     vMx=vMy=vMm=0.0;
     for(i=0;i<n;i++)
     {
-        vx[i]=vy[i]=0.0;
+        vx[i]=vy[i]=vm[i]=0.0;
     }
     fichIn.open("particulas_velocidades.txt");
     fichOut.open("histograma-velocidades.txt");
@@ -427,7 +430,7 @@ void HistVel(float a, float b, int n)
             while(t<a)
             {
                 for(i=0;i<n;i++) //Descartamos los datos que no nos interesan
-                    for(j=0;j<1;j++)
+                    for(j=0;j<2;j++)
                         fichIn >> t;
                 fichIn >> t;
             }
@@ -441,6 +444,9 @@ void HistVel(float a, float b, int n)
 
                     fichIn >> aux;
                     vy[i]=vy[i]+aux;
+
+                    fichIn >> aux;
+                    vm[i]=vm[i]+aux;
                 }
 
                 if(!fichIn.eof())
@@ -454,7 +460,7 @@ void HistVel(float a, float b, int n)
             {
                 vx[i]=vx[i]/M;
                 vy[i]=vy[i]/M;
-                vm[i]=sqrt(vx[i]*vx[i]+vy[i]*vy[i]);
+                vm[i]=vm[i]/M;
             }
 
             //Calculamos el máximo de cada vector para poder hacer equiparticiones de cada intervalo

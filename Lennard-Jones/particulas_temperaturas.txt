@@ -1,1 +1,0 @@
-Temperatura media del sistema en el intervalo de tiempo dado: 0.773139
