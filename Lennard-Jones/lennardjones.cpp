@@ -24,13 +24,13 @@ bool ac(double a[][2], double r[][2], int n, double& V);
 void rh(double r[][2], double v[][2], double a[][2], double h, int n);
 void vh(double v[][2], double a[][2], double h, int n);
 double temp(float a, float b,int n);
-void HistVel(float a, float b, int n, double T);
+void HistVel(float a, float b, int n, double vMx, double vMy, double vMm);
 
 
 int main(void)
 {
     int i,j,k;
-    double a[N][2], r[N][2], v[N][2], v2, h, T, V, t;
+    double a[N][2], r[N][2], v[N][2], v2, h, T, V, t, vMx, vMy, vMm;
     ifstream fichIn;
     ofstream fichOPos, fichOVel, fichOE;
     bool div;
@@ -67,17 +67,28 @@ int main(void)
         fichOPos.precision(6); 
         fichOVel.precision(6);
         T=V=0.0;
+        vMx=vMy=vMm=0.0;
         //Volcamos las posiciones y velocidades iniciales
         fichOVel << "0.00" << endl;
         for(i=0;i<N;i++)
         {
             v2=v[i][0]*v[i][0]+v[i][1]*v[i][1];
-            fichOPos << r[i][0] << ", " << r[i][1] << endl;
-            fichOVel << v[i][0] << " " << v[i][1] << " " << sqrt(v2) << endl;
 
             //Calculamos la energía cinética inicial
             if(E)
                 T=T+v2/2;
+
+            v2=sqrt(v2);
+            fichOPos << r[i][0] << ", " << r[i][1] << endl;
+            fichOVel << v[i][0] << " " << v[i][1] << " " << v2 << endl;
+            //Calculamos los valores máximos de velocidad para hacer el histograma luego
+            if(vMx<abs(v[i][0]))
+                vMx=abs(v[i][0]);
+            if(vMy<abs(v[i][1]))
+                vMy=abs(v[i][1]);
+            if(vMm<v2)
+                vMm=v2;
+            
         }
         fichOPos << endl;
         fichOE << "0.00 " << T << " ";
@@ -102,10 +113,17 @@ int main(void)
                 for(i=0;i<N;i++)
                 {
                     v2=v[i][0]*v[i][0]+v[i][1]*v[i][1];
-                    fichOPos << r[i][0] << ", " << r[i][1] << endl;
-                    fichOVel << v[i][0] << " " << v[i][1] << " " << sqrt(v2) << endl;
                     if(E)
                         T=T+v2/2;
+                    v2=sqrt(v2);
+                    fichOPos << r[i][0] << ", " << r[i][1] << endl;
+                    fichOVel << v[i][0] << " " << v[i][1] << " " << v2 << endl;
+                    if(vMx<abs(v[i][0]))
+                        vMx=abs(v[i][0]);
+                    if(vMy<abs(v[i][1]))
+                        vMy=abs(v[i][1]);
+                    if(vMm<v2)
+                        vMm=v2;
                 }
                 fichOPos << endl;
                 if(E)
@@ -128,7 +146,7 @@ int main(void)
     t=temp(20,50,N);
 
     //Histograma de velocidades
-    HistVel(20,50,N,t);
+    HistVel(20,50,N,vMx,vMy,vMm);
 
     return 0;
 }
@@ -404,17 +422,15 @@ double temp(float a, float b,int n)
 //de tiempo especificado, de la velocidad que llevan en cada componente y el módulo.
 //Argumentos: a,b, límites del intervalo donde se calcula el promedio; n, número de partículas; T, temperatura del
 //sistema
-void HistVel(float a, float b, int n, double T)
+void HistVel(float a, float b, int n, double vMx, double vMy, double vMm)
 {
-    float t, limS, limI, vMm, aux, lx, ly, lm, vx[N], vy[N], vm[N], tem;
-    int i, j, M, v[4];
+    float t, aux, vx[N], vy[N], vm[N], lx, ly, lm;
+    int i, j, M;
     ifstream fichIn;
     ofstream fichOut;
 
     //Iniciamos los datos
     t=0.0;
-    tem=sqrt(T);
-    //vMx=vMy=vMm=0.0;
     for(i=0;i<n;i++)
     {
         vx[i]=vy[i]=vm[i]=0.0;
@@ -428,6 +444,9 @@ void HistVel(float a, float b, int n, double T)
             t=0.0;
         else
         {
+            //Calculamos la longitud de cada subintervalo
+            lx=2*vMx/n; ly=2*vMy/n; //Hay valores positivos y negativos
+            lm=vMm/n;
             fichIn >> t;
             while(t<a)
             {
@@ -441,30 +460,59 @@ void HistVel(float a, float b, int n, double T)
             {
                 for(i=0;i<n; i++)
                 {
+                    //Eje X
                     fichIn >> aux;
-                    vx[i]=vx[i]+aux;
+                    aux=aux+vMx;
+                    j=floor(aux/lx);
+                    if(j>=n)
+                        j=n-1;
+                    if(j<0)
+                        j=0;
+                    vx[j]++;
 
+                    //Eje Y
                     fichIn >> aux;
-                    vy[i]=vy[i]+aux;
+                    aux=aux+vMy;
+                    j=floor(aux/ly);
+                    if(j>=n)
+                        j=n-1;
+                    if(j<0)
+                        j=0;
+                    vy[j]++;
 
+                    //Módulo
                     fichIn >> aux;
-                    vm[i]=vm[i]+aux;
+                    j=floor(aux/lm);
+                    if(j>=n)
+                    j=n-1;
+                    vm[j]++;
                 }
 
                 if(!fichIn.eof())
                     fichIn >> t;             
             }
 
-            //Calculamos el promedio de la velocidad de cada partícula y el vector con el promedio del módulo de
-            //la velocidad de cada partícula
-            M=floor((b-a)/(s*D))+1;
+            //Calculamos el promedio de partículas con velocidad en cada subintervalo
+            M=n*(floor((b-a)/(s*D))+1);
+            //Aproximamos la integral por el producto de la función de distribución por la amplitud del intervalo
             for(i=0;i<n;i++)
             {
-                vx[i]=vx[i]/M;
-                vy[i]=vy[i]/M;
-                vm[i]=vm[i]/M;
+                vx[i]=vx[i]/(M*lx);
+                vy[i]=vy[i]/(M*ly);
+                vm[i]=vm[i]/(M*lm);
             }
 
+            //Pasamos al fichero la información obtenida
+            for(i=0;i<n;i++)
+                fichOut << lx*(i+0.5)-vMx << ", " << vx[i] << endl;
+            fichOut << endl;
+            for(i=0;i<n;i++)
+                fichOut << ly*(i+0.5)-vMy << ", " << vy[i] << endl;
+            fichOut << endl;
+            for(i=0;i<n;i++)
+                fichOut << lm*(i+0.5) << ", " << vm[i] << endl;
+            fichOut << endl;
+/*
             //Dividimos la recta real para obtener las particiones óptimas para poder aplicar el test de chi^2
             //En X e Y, la distribución es una gaussiana, luego dividimos la recta real en cuatro subintervalos
             //equiprobables (0.25)
@@ -545,7 +593,7 @@ void HistVel(float a, float b, int n, double T)
 
 
 
-            /*
+            
             //Calculamos el máximo de cada vector para poder hacer equiparticiones de cada intervalo
             vMx=abs(vx[0]);
             vMy=abs(vy[0]);
