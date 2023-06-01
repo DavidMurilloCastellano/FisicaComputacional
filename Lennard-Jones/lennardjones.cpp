@@ -23,14 +23,14 @@ double dist(double x[], double y[]);
 bool ac(double a[][2], double r[][2], int n, double& V);
 void rh(double r[][2], double v[][2], double a[][2], double h, int n);
 void vh(double v[][2], double a[][2], double h, int n);
-void temp(float a, float b,int n);
-void HistVel(float a, float b, int n);
+double temp(float a, float b,int n);
+void HistVel(float a, float b, int n, double T);
 
 
 int main(void)
 {
     int i,j,k;
-    double a[N][2], r[N][2], v[N][2], v2, h, T, V;
+    double a[N][2], r[N][2], v[N][2], v2, h, T, V, t;
     ifstream fichIn;
     ofstream fichOPos, fichOVel, fichOE;
     bool div;
@@ -125,10 +125,10 @@ int main(void)
     fichOE.close();
 
     //Calculamos la temperatura en el intervalo especificado en el guion
-    temp(20,50,N);
+    t=temp(20,50,N);
 
     //Histograma de velocidades
-    HistVel(20,50,N);
+    HistVel(20,50,N,t);
 
     return 0;
 }
@@ -359,7 +359,7 @@ void vh(double v[][2], double a[][2], double h, int n)
 //energía cinética del sistema del fichero "particulas_energias.txt" y escribe la temperatura obtenida en
 //particulas_temperatura.txt.
 //Argumentos: a,b, extremos del intervalo en el que se calcula la temperatura; n, número de partículas del sistema; 
-void temp(float a, float b,int n)
+double temp(float a, float b,int n)
 {
     double t,aux,h;
     int i;
@@ -397,22 +397,24 @@ void temp(float a, float b,int n)
     fichIn.close();
     fichOut.close();
 
-    return;
+    return t;
 }
 
 //Función HistVel: pasa a un fichero la distribución relativa de las partículas según el promedio, en el instante
 //de tiempo especificado, de la velocidad que llevan en cada componente y el módulo.
-//Argumentos:
-void HistVel(float a, float b, int n)
+//Argumentos: a,b, límites del intervalo donde se calcula el promedio; n, número de partículas; T, temperatura del
+//sistema
+void HistVel(float a, float b, int n, double T)
 {
-    float t, vMx, vMy, vMm, aux, lx, ly, lm, vx[N], vy[N], vm[N];
-    int i, j, M, v[N];
+    float t, limS, limI, vMm, aux, lx, ly, lm, vx[N], vy[N], vm[N], tem;
+    int i, j, M, v[4];
     ifstream fichIn;
     ofstream fichOut;
 
     //Iniciamos los datos
     t=0.0;
-    vMx=vMy=vMm=0.0;
+    tem=sqrt(T);
+    //vMx=vMy=vMm=0.0;
     for(i=0;i<n;i++)
     {
         vx[i]=vy[i]=vm[i]=0.0;
@@ -463,6 +465,87 @@ void HistVel(float a, float b, int n)
                 vm[i]=vm[i]/M;
             }
 
+            //Dividimos la recta real para obtener las particiones óptimas para poder aplicar el test de chi^2
+            //En X e Y, la distribución es una gaussiana, luego dividimos la recta real en cuatro subintervalos
+            //equiprobables (0.25)
+            limS=0.6745*tem;
+            limI=-limS;
+            //Iniciamos el vector con el que vamos a contar
+            for(i=0;i<3;i++)
+                v[i]=0;
+            //Eje X
+            for(i=0;i<n;i++)
+            {
+                if(vx[i]<limI)
+                    v[0]++;
+                else if(vx[i]<0)
+                    v[1]++;
+                else if(vx[i]<limS)
+                    v[2]++;
+                else
+                    v[3]++;
+            }
+            //Pasamos la información obtenida al fichero para poder representarla luego
+            //Tomamos como puntos medios de los intervalos los que dejan a ambos lados probabilidad 0.125
+            fichOut << -1.1505*tem << ", " << (1.0*v[0])/n << endl;
+            fichOut << -0.3187*tem << ", " << (1.0*v[1])/n << endl;
+            fichOut << 0.3187*tem << ", " << (1.0*v[2])/n << endl;
+            fichOut << 1.1505*tem << ", " << (1.0*v[3])/n << endl;
+            fichOut << endl;
+            //Iniciamos el vector con el que vamos a contar
+            for(i=0;i<3;i++)
+                v[i]=0;
+            //Eje Y
+            for(i=0;i<n;i++)
+            {
+                if(vy[i]<limI)
+                    v[0]++;
+                else if(vy[i]<0)
+                    v[1]++;
+                else if(vy[i]<limS)
+                    v[2]++;
+                else
+                    v[3]++;
+            }
+            //Pasamos la información obtenida al fichero para poder representarla luego
+            //Tomamos como puntos medios de los intervalos los que dejan a ambos lados probabilidad 0.125
+            fichOut << -1.1505*tem << ", " << (1.0*v[0])/n << endl;
+            fichOut << -0.3187*tem << ", " << (1.0*v[1])/n << endl;
+            fichOut << 0.3187*tem << ", " << (1.0*v[2])/n << endl;
+            fichOut << 1.1505*tem << ", " << (1.0*v[3])/n << endl;
+            fichOut << endl;
+
+            //Pasamos ahora a la distribución de los módulos. En este caso, siguen una distribución de Maxwell
+            //De nuevo, partimos la semirrecta real positiva en cuatro subintervalos equiprobables
+            limI=0.7786*sqrt(2)*tem; //Deja a la izquierda 0.25
+            aux=1.0877*sqrt(2)*tem; //Deja a la izquierda 0.5
+            limS=1.4332*sqrt(2)*tem; //Deja a la izquierda 0.75
+            //Iniciamos el vector con el que vamos a contar
+            for(i=0;i<3;i++)
+                v[i]=0;
+            //Módulo
+            for(i=0;i<n;i++)
+            {
+                if(vm[i]<limI)
+                    v[0]++;
+                else if(vm[i]<aux)
+                    v[1]++;
+                else if(vm[i]<limS)
+                    v[2]++;
+                else
+                    v[3]++;
+            }
+            //Pasamos la información obtenida al fichero para poder representarla luego
+            //Tomamos como puntos medios de los intervalos los que dejan a ambos lados probabilidad 0.125
+            fichOut << 0.5884*sqrt(2)*tem << ", " << (1.0*v[0])/n << endl;
+            fichOut << 0.9365*sqrt(2)*tem << ", " << (1.0*v[1])/n << endl;
+            fichOut << 1.247*sqrt(2)*tem << ", " << (1.0*v[2])/n << endl;
+            fichOut << 1.694*sqrt(2)*tem << ", " << (1.0*v[3])/n << endl;
+            fichOut << endl;
+
+
+
+            /*
             //Calculamos el máximo de cada vector para poder hacer equiparticiones de cada intervalo
             vMx=abs(vx[0]);
             vMy=abs(vy[0]);
@@ -537,7 +620,7 @@ void HistVel(float a, float b, int n)
             for(i=0;i<n;i++)
                 fichOut << lm*(i+1/2) << ", " << (v[i]*1.0)/n << endl;
             fichOut << endl;
-
+            */
         }
     }
     fichOut.close();
