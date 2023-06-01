@@ -4,20 +4,22 @@
 #include <cmath>
 #include <ctime>
 #include <cstdlib>
+#include "gsl_rng.h" //Libreria para generación de números aleatorios
 //#include <iomanip>
 using namespace std;
 
 #define Pi 3.14159265358979 //Valor del número Pi
 #define N 20 //Número de átomos que conforman nuestro sistema
 #define L 10 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada
-#define s 2e-4 //Paso con el que se aplica el algoritmo
+#define v0 4 //Módulo de la velocidad inicial de las partículas en la caja
+#define s 1e-4 //Paso con el que se aplica el algoritmo
 #define S 50 //Límite de tiempo hasta el que se considera la simulación
-#define D 100 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
+#define D 200 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
 #define R 1 //Separación mínimia inicial entre cada par de partículas
 #define E true //Indica si se desea calcular o no la energía del sistema
 
 //Cabecera con todas las funciones que hemos definido
-void cond_inic_aleatorio(int n);
+void cond_inic_aleatorio(int n,gsl_rng *tau);
 void cond_inic_panal(int n);
 double dist(double x[], double y[]);
 bool ac(double a[][2], double r[][2], int n, double& V);
@@ -35,8 +37,13 @@ int main(void)
     ofstream fichOPos, fichOVel, fichOE;
     bool div;
 
+    gsl_rng *tau;
+    int semilla=time(NULL); //Semilla del generador de números aleatorios
+    tau=gsl_rng_alloc(gsl_rng_taus); //Inicializamos el puntero
+    gsl_rng_set(tau,semilla); //Inicializamos la semilla
+
     //Generamos aleatoriamente las condiciones iniciales
-    //cond_inic_aleatorio(N);
+    cond_inic_aleatorio(N, tau);
     //cond_inic_panal(N);
 
     //Copiamos las velocidades y posiciones iniciales aleatorias
@@ -156,23 +163,21 @@ int main(void)
 //caja. Escribe dicha información en el fichero "pos-vel_iniciales.txt" según: en cada línea se escribe posición en
 //X, posición en Y, velocidad en X, velocidad en Y
 //Argumentos: n, número de partículas
-void cond_inic_aleatorio(int n)
+void cond_inic_aleatorio(int n,gsl_rng *tau)
 {
     int i,j,k;
-    double v,p,l,r[N][2],r1[2],r2[2];
+    double v,r[N][2],r1[2],r2[2];
     ofstream fichOut;
 
     v=0.0;
-    p=2*Pi/RAND_MAX; //Calculamos la cte por la que hay que multiplicar para generar números aleatorios en [0,2Pi]
-    l=1.0*L/RAND_MAX; //Calculamos la cte por la que hay que multiplicar para generar números aleatorios en [0,L]
     fichOut.open("pos-vel_iniciales.txt");
     fichOut.precision(8);
-    srand(time(NULL)); //Establecemos la semilla para la generación de números aleatorios
+    //srand(time(NULL)); //Establecemos la semilla para la generación de números aleatorios
 
     //Generamos las posiciones y velocidades aleatorias
     for(i=0;i<n;i++)
     {
-        r1[0]=rand()*l; r1[1]=rand()*l;
+        r1[0]=gsl_rng_uniform(tau)*L; r1[1]=gsl_rng_uniform(tau)*L;
         r[i][0]=r1[0]; r[i][1]=r1[1];
         //Comprobamos que las partículas no parten de posiciones demasiado próximas
         k=0; //Para que no genere infinitos números aleatorios
@@ -181,7 +186,7 @@ void cond_inic_aleatorio(int n)
             r2[0]=r[j][0]; r2[1]=r[j][1];
             while(dist(r1,r2)<R && k<1000)
             {
-                r1[0]=rand()*l; r1[1]=rand()*l;
+                r1[0]=gsl_rng_uniform(tau)*L; r1[1]=gsl_rng_uniform(tau)*L;
                 r[i][0]=r1[0]; r[i][1]=r1[1];
                 k++;
                 j=0;
@@ -196,8 +201,8 @@ void cond_inic_aleatorio(int n)
 
         else
         {
-            v=rand()*p;
-            fichOut << r[i][0] << " " << r[i][1] << " " << cos(v) << " " << sin(v) << endl; 
+            v=2*Pi*gsl_rng_uniform(tau);
+            fichOut << r[i][0] << " " << r[i][1] << " " << v0*cos(v) << " " << v0*sin(v) << endl; 
         }   
         
     }
