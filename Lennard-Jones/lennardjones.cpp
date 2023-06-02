@@ -10,11 +10,15 @@
 using namespace std;
 
 #define Pi 3.14159265358979 //Valor del número Pi
-#define N 20 //Número de átomos que conforman nuestro sistema
+#define N 16 //Número de átomos que conforman nuestro sistema
 #define L 10 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada
+#define nT 6 //Cantidad de distintos valores de temperatura que se estudiarán
+#define T1 20 //Instante inicial de tiempo para estudiar las funciones de interés
+#define T2 30 //Instante final de tiempo para estudiar las funciones de interés
+#define K 1.3 //Factor en el que se incrementa la velocidad de las partículas al calentar el sistema
 #define v0 1 //Módulo de la velocidad inicial de las partículas en la caja
 #define s 1e-4 //Paso con el que se aplica el algoritmo
-#define S 50 //Límite de tiempo hasta el que se considera la simulación
+#define S 30 //Límite de tiempo hasta el que se considera la simulación
 #define D 200 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
 #define R 1 //Separación mínimia inicial entre cada par de partículas
 #define E true //Indica si se desea calcular o no la energía del sistema
@@ -25,7 +29,7 @@ void cond_inic_vx(int n, gsl_rng *tau);
 void cond_inic_panal(int n);
 double dist(double x[], double y[]);
 bool ac(double a[][2], double r[][2], int n, double& V);
-void rh(double r[][2], double v[][2], double a[][2], double h, int n);
+double rh(double r[][2], double v[][2], double a[][2], double h, int n);
 void vh(double v[][2], double a[][2], double h, int n);
 double temp(float a, float b,int n);
 void HistVel(float a, float b, int n, double vMx, double vMy, double vMm);
@@ -33,20 +37,20 @@ void HistVel(float a, float b, int n, double vMx, double vMy, double vMm);
 
 int main(void)
 {
-    int i,j,k;
-    double a[N][2], r[N][2], v[N][2], v2, h, T, V, t, vMx, vMy, vMm;
+    int i,j,k,l;
+    double a[N][2], r[N][2], v[N][2], v2, h, T, V, t, vMx, vMy, vMm, P;
     ifstream fichIn;
-    ofstream fichOPos, fichOVel, fichOE;
+    ofstream fichOPos, fichOVel, fichOE, fichOPT;
     bool div;
 
     gsl_rng *tau;
     int semilla=time(NULL); //Semilla del generador de números aleatorios
     tau=gsl_rng_alloc(gsl_rng_taus); //Inicializamos el puntero
     gsl_rng_set(tau,semilla); //Inicializamos la semilla
-
+    
     //Generamos aleatoriamente las condiciones iniciales
-    //cond_inic_aleatorio(N, tau);
-    cond_inic_vx(N,tau);
+    cond_inic_aleatorio(N, tau);
+    //cond_inic_vx(N,tau);
     //cond_inic_panal(N);
 
     //Copiamos las velocidades y posiciones iniciales aleatorias
@@ -68,95 +72,124 @@ int main(void)
     fichOPos.open("particulas-v0="+to_string(v0)+"_posiciones.txt");
     fichOVel.open("particulas-v0="+to_string(v0)+"_velocidades.txt");
     fichOE.open("particulas-v0="+to_string(v0)+"_energias.txt");
+    fichOPT.open("particulas-v0="+to_string(v0)+"_P-T.txt");
+
+    
     //Comprobamos que el número de partículas coincide con la cantidad de datos leídos
     if(i!=N)
         fichOPos << "El número de partículas indicado no coincide con la cantidad de datos iniciales." << endl;
     else
     {
-        h=s; k=1;
-        fichOPos.precision(6); 
-        fichOVel.precision(6);
-        T=V=0.0;
-        vMx=vMy=vMm=0.0;
-        //Volcamos las posiciones y velocidades iniciales
-        fichOVel << "0.00" << endl;
-        for(i=0;i<N;i++)
+        l=1;
+        do
         {
-            v2=v[i][0]*v[i][0]+v[i][1]*v[i][1];
-
-            //Calculamos la energía cinética inicial
-            if(E)
-                T=T+v2/2;
-
-            v2=sqrt(v2);
-            fichOPos << r[i][0] << ", " << r[i][1] << endl;
-            fichOVel << v[i][0] << " " << v[i][1] << " " << v2 << endl;
-            //Calculamos los valores máximos de velocidad para hacer el histograma luego
-            if(vMx<abs(v[i][0]))
-                vMx=abs(v[i][0]);
-            if(vMy<abs(v[i][1]))
-                vMy=abs(v[i][1]);
-            if(vMm<v2)
-                vMm=v2;
-            
-        }
-        fichOPos << endl;
-        fichOE << "0.00 " << T << " ";
-
-        //Calculamos las aceleraciones (y energía potencial) iniciales
-        div=ac(a,r,N,V);
-        if(E)
-            fichOE << V << " " << T+V <<endl;
-
-        //Aplicamos el algoritmo de Verlet
-        while(h<=S && div)
-        {
-            rh(r,v,a,s,N);
-            vh(v,a,s,N);
-            div=ac(a,r,N,V);
-            vh(v,a,s,N);
-
-            if(k%D==0) //No pasamos todas las posiciones a la simulación
+            //Calentamos el sistema aumentando la velocidad de las partículas
+            if(l>1)
             {
-                fichOVel << h << endl;
-                T=0.0;
-                for(i=0;i<N;i++)
+                for(i=0; i<N; i++)
                 {
-                    v2=v[i][0]*v[i][0]+v[i][1]*v[i][1];
-                    if(E)
-                        T=T+v2/2;
-                    v2=sqrt(v2);
-                    fichOPos << r[i][0] << ", " << r[i][1] << endl;
-                    fichOVel << v[i][0] << " " << v[i][1] << " " << v2 << endl;
-                    if(vMx<abs(v[i][0]))
-                        vMx=abs(v[i][0]);
-                    if(vMy<abs(v[i][1]))
-                        vMy=abs(v[i][1]);
-                    if(vMm<v2)
-                        vMm=v2;
+                    v[i][0]=K*v[i][0];
+                    v[i][1]=K*v[i][1];
                 }
-                fichOPos << endl;
-                if(E)
-                    fichOE << h << " " << T << " " << V << " " << T+V << endl;
             }
+            h=s; k=1;
+            fichOPos.precision(6); 
+            fichOVel.precision(6);
+            T=V=0.0;
+            vMx=vMy=vMm=0.0;
+            //Volcamos las posiciones y velocidades iniciales
+            fichOVel << "0.00" << endl;
+            for(i=0;i<N;i++)
+            {
+                v2=v[i][0]*v[i][0]+v[i][1]*v[i][1];
 
-            h=h+s; k++;
-        }
+                //Calculamos la energía cinética inicial
+                if(E)
+                    T=T+v2/2;
 
-        if (!div) //Comprobamos que no ha habido errores en los cálculos
-            fichOPos << "Error al calcular la aceleración" << endl;
+                v2=sqrt(v2);
+                fichOPos << r[i][0] << ", " << r[i][1] << endl;
+                fichOVel << v[i][0] << " " << v[i][1] << " " << v2 << endl;
+                //Calculamos los valores máximos de velocidad para hacer el histograma luego
+                /*
+                if(vMx<abs(v[i][0]))
+                    vMx=abs(v[i][0]);
+                if(vMy<abs(v[i][1]))
+                    vMy=abs(v[i][1]);
+                if(vMm<v2)
+                    vMm=v2;
+                */
+            }
+            fichOPos << endl;
+            fichOE << "0.00 " << T << " ";
 
-    }    
+            //Calculamos las aceleraciones (y energía potencial) iniciales
+            div=ac(a,r,N,V);
+            if(E)
+                fichOE << V << " " << T+V <<endl;
 
-    fichOPos.close();
-    fichOVel.close();
-    fichOE.close();
+            //Aplicamos el algoritmo de Verlet
+            P=0.0;
+            while(h<=S && div)
+            {
+                if(h>=T1 && h<=T2)
+                    P=P+rh(r,v,a,s,N);
+                else
+                    rh(r,v,a,s,N);
+                vh(v,a,s,N);
+                div=ac(a,r,N,V);
+                vh(v,a,s,N);
 
-    //Calculamos la temperatura en el intervalo especificado en el guion
-    t=temp(20,50,N);
+                if(k%D==0) //No pasamos todas las posiciones a la simulación
+                {
+                    fichOVel << h << endl;
+                    T=0.0;
+                    for(i=0;i<N;i++)
+                    {
+                        v2=v[i][0]*v[i][0]+v[i][1]*v[i][1];
+                        if(E)
+                            T=T+v2/2;
+                        v2=sqrt(v2);
+                        fichOPos << r[i][0] << ", " << r[i][1] << endl;
+                        fichOVel << v[i][0] << " " << v[i][1] << " " << v2 << endl;
+                        /*
+                        if(vMx<abs(v[i][0]))
+                            vMx=abs(v[i][0]);
+                        if(vMy<abs(v[i][1]))
+                            vMy=abs(v[i][1]);
+                        if(vMm<v2)
+                            vMm=v2;
+                        */
+                    }
+                    fichOPos << endl;
+                    if(E)
+                        fichOE << h << " " << T << " " << V << " " << T+V << endl;
+                }
 
-    //Histograma de velocidades
-    HistVel(20,50,N,vMx,vMy,vMm);
+                h=h+s; k++;
+
+                if (!div) //Comprobamos que no ha habido errores en los cálculos
+                fichOPos << "Error al calcular la aceleración" << endl;
+            }    
+
+            //Calculamos la temperatura y la presión en el intervalo especificado en el guion
+            t=temp(T1,T2,N);
+            P=P/((floor((T2-T1)/(s*D))+1)*4*L); //La presión es el cambio de momento total por unidad de tiempo y área (4L al estar en dos dimensiones)
+
+            //Pasamos a un fichero la información obtenida
+            fichOPT << t << ", " << P << endl;
+            l++;
+        } while (l<=nT);
+
+
+        fichOPos.close();
+        fichOVel.close();
+        fichOE.close();
+        fichOPT.close();
+
+        //Histograma de velocidades
+        //HistVel(T1,T2,N,vMx,vMy,vMm);
+    }
 
     return 0;
 }
@@ -381,30 +414,43 @@ bool ac(double a[][2], double r[][2], int n, double& V)
 //Función rh: calcula las posiciones en un instante h posterior a partir del desarrollo en serie
 //Argumentos: r, v, a, matrices posiciones, velocidades y aceleraciones en el instante anterior;
 //h, paso; n, número de cuerpos
-void rh(double r[][2], double v[][2], double a[][2], double h, int n)
+double rh(double r[][2], double v[][2], double a[][2], double h, int n)
 {
     int i,k;
-    double d;
+    double d, p;
 
     d=h*h/2; //Calculamos las constantes fuera del bucle por optimización
+    p=0.0;
     for (i=0;i<n;i++)
     {
         r[i][0]=r[i][0]+h*v[i][0]+d*a[i][0];
         //Comprobamos que las partículas no chocan con el borde de la caja
         if(r[i][0]<0)
+        {
             r[i][0]=r[i][0]+L;
+            p=p+2*abs(v[i][0]);
+        }
         if(r[i][0]>L)
+        {
             r[i][0]=r[i][0]-L;
+            p=p+2*abs(v[i][0]);
+        }
 
         r[i][1]=r[i][1]+h*v[i][1]+d*a[i][1];
         //Comprobamos que las partículas no chocan con el borde de la caja
         if(r[i][1]<0)
-            r[i][1]=r[i][1]+L;
+        {
+            r[i][1]=r[i][1]+L;r[i][1]=r[i][1]+L;
+            p=p+2*abs(v[i][1]);
+        }
         if(r[i][1]>L)
+        {
             r[i][1]=r[i][1]-L;
+            p=p+2*abs(v[i][1]);
+        }
+            
     }
-    //r[i][0]=r[i][0]-floor(r[i][0]/L)*L;
-    return;
+    return p;
 }
 
 //Función vh: calcula los dos primeros sumandos de la velocidad en un instante h posterior a partir del desarrollo 
