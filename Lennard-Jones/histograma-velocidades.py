@@ -4,13 +4,19 @@ import numpy as np
 import io
 from math import sqrt, pi
 
+#==========================================================================
+#Parámetros
+v0="1"
+
+#=========================================================================
+
 
 #Ficheros
-file_in= "histograma-velocidades.txt" # Nombre del fichero de datos con la nube de puntos a graficar
-file_temp= "particulas_temperatura.txt" # Nombre del fichero con la temperatura calculada para el sistema
-file_out1 = "hist-vel-X.pdf" # Nombre del fichero de salida
-file_out2= "hist-vel-Y.pdf" # Nombre del fichero de salida
-file_out3= "hist-vel-Mod.pdf" # Nombre del fichero de salida
+file_in= "histograma-velocidades-v0="+v0+".txt" # Nombre del fichero de datos con la nube de puntos a graficar
+file_temp= "particulas-v0="+v0+"_temperatura.txt" # Nombre del fichero con la temperatura calculada para el sistema
+file_out1 = "hist-vel-X-v0="+v0+".pdf" # Nombre del fichero de salida
+file_out2= "hist-vel-Y-v0="+v0+".pdf" # Nombre del fichero de salida
+file_out3= "hist-vel-Mod-v0="+v0+".pdf" # Nombre del fichero de salida
 
 #Funciones a ajustar
 def Pm(v,T):
@@ -42,9 +48,12 @@ for graf_data_str in data_str.split("\n\n"):
 figx=plt.figure()
 x=graf[0][0]
 y=graf[0][1]
-plt.plot(x,y,".",label="Datos")
+d=x[1]-x[0]
+plt.bar(x,y,width=d,label="Datos",color="c")
 v=np.linspace(1.1*x[0],-1.1*x[0],100)
-plt.plot(v,Px(v,temp),label="Ajuste")
+plt.plot(v,Px(v,temp),label="Ajuste",color="m")
+plt.xlabel("$v_x$")
+plt.ylabel("$P(v_x)$")
 plt.title("Histograma de velocidades en el eje X")
 plt.legend()
 figx.savefig(file_out1)
@@ -52,9 +61,12 @@ figx.savefig(file_out1)
 figy=plt.figure()
 x=graf[1][0]
 y=graf[1][1]
-plt.plot(x,y,".",label="Datos")
+d=x[1]-x[0]
+plt.bar(x,y,width=d,label="Datos",color="c")
 v=np.linspace(1.1*x[0],-1.1*x[0],100)
-plt.plot(v,Px(v,temp),label="Ajuste")
+plt.plot(v,Px(v,temp),label="Ajuste",color="m")
+plt.xlabel("$v_y$")
+plt.ylabel("$P(v_y)$")
 plt.title("Histograma de velocidades en el eje Y")
 plt.legend()
 figy.savefig(file_out2)
@@ -62,9 +74,12 @@ figy.savefig(file_out2)
 figm=plt.figure()
 x=graf[2][0]
 y=graf[2][1]
-plt.plot(x,y,".",label="Datos")
+d=x[1]-x[0]
+plt.bar(x,y,width=d,label="Datos",color="c")
 v=np.linspace(0,1.1*x[-1],100)
-plt.plot(v,Pm(v,temp),label="Ajuste")
+plt.plot(v,Pm(v,temp),label="Ajuste",color="m")
+plt.xlabel("$v$")
+plt.ylabel("$P(v)$")
 plt.title("Histograma del módulo de velocidades")
 plt.legend()
 figm.savefig(file_out3)

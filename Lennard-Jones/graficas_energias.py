@@ -4,11 +4,17 @@ from matplotlib.pyplot import cm
 import numpy as np
 import io
 
+#==========================================================================
+#Parámetros
+v0="1"
+
+#=========================================================================
+
 
 
 #Ficheros
-file_in = "particulas_energias.txt" # Nombre del fichero de datos
-file_out = "particulas_energias.pdf" # Nombre del fichero de salida
+file_in = "particulas-v0="+v0+"_energias.txt" # Nombre del fichero de datos
+file_out = "particulas-v0="+v0+"_energias.pdf" # Nombre del fichero de salida
 
 # Lectura del fichero de datos
 # ========================================

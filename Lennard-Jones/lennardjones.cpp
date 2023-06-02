@@ -4,6 +4,7 @@
 #include <cmath>
 #include <ctime>
 #include <cstdlib>
+#include <string>
 #include "gsl_rng.h" //Libreria para generación de números aleatorios
 //#include <iomanip>
 using namespace std;
@@ -11,7 +12,7 @@ using namespace std;
 #define Pi 3.14159265358979 //Valor del número Pi
 #define N 20 //Número de átomos que conforman nuestro sistema
 #define L 10 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada
-#define v0 4 //Módulo de la velocidad inicial de las partículas en la caja
+#define v0 1 //Módulo de la velocidad inicial de las partículas en la caja
 #define s 1e-4 //Paso con el que se aplica el algoritmo
 #define S 50 //Límite de tiempo hasta el que se considera la simulación
 #define D 200 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
@@ -20,6 +21,7 @@ using namespace std;
 
 //Cabecera con todas las funciones que hemos definido
 void cond_inic_aleatorio(int n,gsl_rng *tau);
+void cond_inic_vx(int n, gsl_rng *tau);
 void cond_inic_panal(int n);
 double dist(double x[], double y[]);
 bool ac(double a[][2], double r[][2], int n, double& V);
@@ -43,7 +45,8 @@ int main(void)
     gsl_rng_set(tau,semilla); //Inicializamos la semilla
 
     //Generamos aleatoriamente las condiciones iniciales
-    cond_inic_aleatorio(N, tau);
+    //cond_inic_aleatorio(N, tau);
+    cond_inic_vx(N,tau);
     //cond_inic_panal(N);
 
     //Copiamos las velocidades y posiciones iniciales aleatorias
@@ -62,9 +65,9 @@ int main(void)
     }
     fichIn.close();
 
-    fichOPos.open("particulas_posiciones.txt");
-    fichOVel.open("particulas_velocidades.txt");
-    fichOE.open("particulas_energias.txt");
+    fichOPos.open("particulas-v0="+to_string(v0)+"_posiciones.txt");
+    fichOVel.open("particulas-v0="+to_string(v0)+"_velocidades.txt");
+    fichOE.open("particulas-v0="+to_string(v0)+"_energias.txt");
     //Comprobamos que el número de partículas coincide con la cantidad de datos leídos
     if(i!=N)
         fichOPos << "El número de partículas indicado no coincide con la cantidad de datos iniciales." << endl;
@@ -169,10 +172,8 @@ void cond_inic_aleatorio(int n,gsl_rng *tau)
     double v,r[N][2],r1[2],r2[2];
     ofstream fichOut;
 
-    v=0.0;
     fichOut.open("pos-vel_iniciales.txt");
     fichOut.precision(8);
-    //srand(time(NULL)); //Establecemos la semilla para la generación de números aleatorios
 
     //Generamos las posiciones y velocidades aleatorias
     for(i=0;i<n;i++)
@@ -204,6 +205,53 @@ void cond_inic_aleatorio(int n,gsl_rng *tau)
             v=2*Pi*gsl_rng_uniform(tau);
             fichOut << r[i][0] << " " << r[i][1] << " " << v0*cos(v) << " " << v0*sin(v) << endl; 
         }   
+        
+    }
+
+    fichOut.close();    
+
+    return;
+}
+
+//Función cond_inic_vx: genera unas condiciones iniciales para el sistema con las partículas aleatoriamente
+//distribuidas por la caja pero todas con ella moviéndose hacia la derecha con una velocidad entre 0 y v0
+//Argumentos:n, número de partículas del sistema
+void cond_inic_vx(int n, gsl_rng *tau)
+{
+    int i,j,k;
+    double v,r[N][2],r1[2],r2[2];
+    ofstream fichOut;
+
+    fichOut.open("pos-vel_iniciales.txt");
+    fichOut.precision(8);
+
+    //Generamos las posiciones y velocidades aleatorias
+    for(i=0;i<n;i++)
+    {
+        r1[0]=gsl_rng_uniform(tau)*L; r1[1]=gsl_rng_uniform(tau)*L;
+        r[i][0]=r1[0]; r[i][1]=r1[1];
+        //Comprobamos que las partículas no parten de posiciones demasiado próximas
+        k=0; //Para que no genere infinitos números aleatorios
+        for(j=0;j<i;j++)
+        {
+            r2[0]=r[j][0]; r2[1]=r[j][1];
+            while(dist(r1,r2)<R && k<1000)
+            {
+                r1[0]=gsl_rng_uniform(tau)*L; r1[1]=gsl_rng_uniform(tau)*L;
+                r[i][0]=r1[0]; r[i][1]=r1[1];
+                k++;
+                j=0;
+            }
+        }
+        
+        if(k==1000)
+        {
+            fichOut << "No se generaron partículas suficientemente separadas" << endl;
+            i=n;
+        }
+
+        else
+            fichOut << r[i][0] << " " << r[i][1] << " " << v0*gsl_rng_uniform(tau) << " " << 0 << endl; 
         
     }
 
@@ -390,8 +438,8 @@ double temp(float a, float b,int n)
     ofstream fichOut;
 
     t=0.0;
-    fichIn.open("particulas_energias.txt");
-    fichOut.open("particulas_temperatura.txt");
+    fichIn.open("particulas-v0="+to_string(v0)+"_energias.txt");
+    fichOut.open("particulas-v0="+to_string(v0)+"_temperatura.txt");
 
     if(a>=0 && b<=S && a<b) //Se comprueba que los límites están dentro del rango de tiempo calculado
     {
@@ -440,8 +488,8 @@ void HistVel(float a, float b, int n, double vMx, double vMy, double vMm)
     {
         vx[i]=vy[i]=vm[i]=0.0;
     }
-    fichIn.open("particulas_velocidades.txt");
-    fichOut.open("histograma-velocidades.txt");
+    fichIn.open("particulas-v0="+to_string(v0)+"_velocidades.txt");
+    fichOut.open("histograma-velocidades-v0="+to_string(v0)+".txt");
 
     if(a>=0 && b<=S && a<b) //Se comprueba que los límites están dentro del rango de tiempo calculado
     {
@@ -517,163 +565,6 @@ void HistVel(float a, float b, int n, double vMx, double vMy, double vMm)
             for(i=0;i<n;i++)
                 fichOut << lm*(i+0.5) << ", " << vm[i] << endl;
             fichOut << endl;
-/*
-            //Dividimos la recta real para obtener las particiones óptimas para poder aplicar el test de chi^2
-            //En X e Y, la distribución es una gaussiana, luego dividimos la recta real en cuatro subintervalos
-            //equiprobables (0.25)
-            limS=0.6745*tem;
-            limI=-limS;
-            //Iniciamos el vector con el que vamos a contar
-            for(i=0;i<3;i++)
-                v[i]=0;
-            //Eje X
-            for(i=0;i<n;i++)
-            {
-                if(vx[i]<limI)
-                    v[0]++;
-                else if(vx[i]<0)
-                    v[1]++;
-                else if(vx[i]<limS)
-                    v[2]++;
-                else
-                    v[3]++;
-            }
-            //Pasamos la información obtenida al fichero para poder representarla luego
-            //Tomamos como puntos medios de los intervalos los que dejan a ambos lados probabilidad 0.125
-            fichOut << -1.1505*tem << ", " << (1.0*v[0])/n << endl;
-            fichOut << -0.3187*tem << ", " << (1.0*v[1])/n << endl;
-            fichOut << 0.3187*tem << ", " << (1.0*v[2])/n << endl;
-            fichOut << 1.1505*tem << ", " << (1.0*v[3])/n << endl;
-            fichOut << endl;
-            //Iniciamos el vector con el que vamos a contar
-            for(i=0;i<3;i++)
-                v[i]=0;
-            //Eje Y
-            for(i=0;i<n;i++)
-            {
-                if(vy[i]<limI)
-                    v[0]++;
-                else if(vy[i]<0)
-                    v[1]++;
-                else if(vy[i]<limS)
-                    v[2]++;
-                else
-                    v[3]++;
-            }
-            //Pasamos la información obtenida al fichero para poder representarla luego
-            //Tomamos como puntos medios de los intervalos los que dejan a ambos lados probabilidad 0.125
-            fichOut << -1.1505*tem << ", " << (1.0*v[0])/n << endl;
-            fichOut << -0.3187*tem << ", " << (1.0*v[1])/n << endl;
-            fichOut << 0.3187*tem << ", " << (1.0*v[2])/n << endl;
-            fichOut << 1.1505*tem << ", " << (1.0*v[3])/n << endl;
-            fichOut << endl;
-
-            //Pasamos ahora a la distribución de los módulos. En este caso, siguen una distribución de Maxwell
-            //De nuevo, partimos la semirrecta real positiva en cuatro subintervalos equiprobables
-            limI=0.7786*sqrt(2)*tem; //Deja a la izquierda 0.25
-            aux=1.0877*sqrt(2)*tem; //Deja a la izquierda 0.5
-            limS=1.4332*sqrt(2)*tem; //Deja a la izquierda 0.75
-            //Iniciamos el vector con el que vamos a contar
-            for(i=0;i<3;i++)
-                v[i]=0;
-            //Módulo
-            for(i=0;i<n;i++)
-            {
-                if(vm[i]<limI)
-                    v[0]++;
-                else if(vm[i]<aux)
-                    v[1]++;
-                else if(vm[i]<limS)
-                    v[2]++;
-                else
-                    v[3]++;
-            }
-            //Pasamos la información obtenida al fichero para poder representarla luego
-            //Tomamos como puntos medios de los intervalos los que dejan a ambos lados probabilidad 0.125
-            fichOut << 0.5884*sqrt(2)*tem << ", " << (1.0*v[0])/n << endl;
-            fichOut << 0.9365*sqrt(2)*tem << ", " << (1.0*v[1])/n << endl;
-            fichOut << 1.247*sqrt(2)*tem << ", " << (1.0*v[2])/n << endl;
-            fichOut << 1.694*sqrt(2)*tem << ", " << (1.0*v[3])/n << endl;
-            fichOut << endl;
-
-
-
-            
-            //Calculamos el máximo de cada vector para poder hacer equiparticiones de cada intervalo
-            vMx=abs(vx[0]);
-            vMy=abs(vy[0]);
-            vMm=vm[0];
-            for(i=1;i<n;i++)
-            {
-                if(abs(vx[i])>vMx)
-                    vMx=abs(vx[i]);
-                if(abs(vy[i])>vMy)
-                    vMy=abs(vy[i]);
-                if(vm[i]>vMm)
-                    vMm=vm[i];
-            }
-
-            lx=2*vMx/n; ly=2*vMy/n; //Hay valores positivos y negativos
-            lm=vMm/n;
-
-            //Contamos cuántas partículas hay en cada subintervalo de velocidades
-
-            //Iniciamos el vector con el que vamos a contar
-            for(i=0;i<n;i++)
-                v[i]=0;
-            //Eje X
-            for(i=0;i<n;i++)
-            {
-                aux=vx[i]+vMx;
-                j=floor(aux/lx);
-                if(j>=n)
-                    j=n-1;
-                if(j<0)
-                    j=0;
-                v[j]++;
-            }
-            //Pasamos al fichero la información obtenida
-            for(i=0;i<n;i++)
-                fichOut << lx*(i+1/2)-vMx << ", " << (v[i]*1.0)/n << endl;
-            fichOut << endl;
-
-
-            //Iniciamos el vector con el que vamos a contar
-            for(i=0;i<n;i++)
-                v[i]=0;
-            //Eje Y
-            for(i=0;i<n;i++)
-            {
-                aux=vy[i]+vMy;
-                j=floor(aux/ly);
-                if(j>=n)
-                    j=n-1;
-                if(j<0)
-                    j=0;
-                v[j]++;
-            }
-            //Pasamos al fichero la información obtenida
-            for(i=0;i<n;i++)
-                fichOut << ly*(i+1/2)-vMy << ", " << (v[i]*1.0)/n << endl;
-            fichOut << endl;
-
-
-            //Iniciamos el vector con el que vamos a contar
-            for(i=0;i<n;i++)
-                v[i]=0;
-            //Módulo
-            for(i=0;i<n;i++)
-            {
-                j=floor(vm[i]/lm);
-                if(j>=n)
-                    j=n-1;
-                v[j]++;
-            }
-            //Pasamos al fichero la información obtenida
-            for(i=0;i<n;i++)
-                fichOut << lm*(i+1/2) << ", " << (v[i]*1.0)/n << endl;
-            fichOut << endl;
-            */
         }
     }
     fichOut.close();
