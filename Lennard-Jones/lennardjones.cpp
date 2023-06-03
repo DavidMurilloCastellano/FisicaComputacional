@@ -10,13 +10,13 @@
 using namespace std;
 
 #define Pi 3.14159265358979 //Valor del número Pi
-#define N 16 //Número de átomos que conforman nuestro sistema
-#define L 4 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada
+#define N 21 //Número de átomos que conforman nuestro sistema
+#define L 5.3 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada
 #define nT 1 //Cantidad de distintos valores de temperatura que se estudiarán
 #define T1 20 //Instante inicial de tiempo para estudiar las funciones de interés
 #define T2 50 //Instante final de tiempo para estudiar las funciones de interés
 #define K 1 //Factor en el que se incrementa la velocidad de las partículas al calentar el sistema
-#define v0 1 //Módulo de la velocidad inicial de las partículas en la caja
+#define v0 0 //Módulo de la velocidad inicial de las partículas en la caja
 #define s 1e-4 //Paso con el que se aplica el algoritmo
 #define S 50 //Límite de tiempo hasta el que se considera la simulación
 #define D 200 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
@@ -52,8 +52,8 @@ int main(void)
     //Generamos aleatoriamente las condiciones iniciales
     //cond_inic_aleatorio(N, tau);
     //cond_inic_vx(N,tau);
-    cond_inic_unif(N,tau);
-    //cond_inic_panal(N);
+    //cond_inic_unif(N,tau);
+    cond_inic_panal(N);
 
     //Copiamos las velocidades y posiciones iniciales aleatorias
     fichIn.open("pos-vel_iniciales.txt");
@@ -322,26 +322,28 @@ void cond_inic_unif(int n,gsl_rng *tau)
 //Escribe dicha información en el fichero "pos-vel_iniciales.txt" según: en cada línea se escribe posición en
 //X, posición en Y, velocidad en X, velocidad en Y
 //Argumentos: n, número de partículas
-
-//REVISAR
 void cond_inic_panal(int n)
 {
-    int H, i;
-    double l, a, b;
+    int m, i;
+    double l, a, b, x1, x2;
     ofstream fichOut;
 
-    l=L/3.0;
-    a=l*sqrt(3)/2;
+    l=L/5.098; //Punto medio entre 5 y 3sqrt(3)
+    a=l*sqrt(3)/2; 
     b=l/2;
-    H=n/4;
+    m=n/7;
     fichOut.open("pos-vel_iniciales.txt");
 
-    for(i=0;i<H; i++)
+    for(i=0;i<m; i++)
     {
-        fichOut << a*(2*i+1) << " " << 0.0 << " " << 0.0 << " " << 0.0 << endl;
-        fichOut << 2*a*i << " " << b << " " << 0.0 << " " << 0.0 << endl;
-        fichOut << 2*a*i << " " << b+l << " " << 0.0 << " " << 0.0 << endl;
-        fichOut << a*(2*i+1) << " " << 2*l << " " << 0.0 << " " << 0.0 << endl;
+        x1=a*(2*i+1); x2=2*a*i;
+        fichOut << x1 << " " << 0.0 << " " << 0.0 << " " << 0.0 << endl;
+        fichOut << x2 << " " << b << " " << 0.0 << " " << 0.0 << endl;
+        fichOut << x2 << " " << b+l << " " << 0.0 << " " << 0.0 << endl;
+        fichOut << x1 << " " << 2*l << " " << 0.0 << " " << 0.0 << endl;
+        fichOut << x1 << " " << 3*l << " " <<  0.0 << " " << 0.0 << endl;
+        fichOut << x2 << " " << 3*l+b << " " << 0.0 << " " << 0.0 << endl;
+        fichOut << x2 << " " << 4*l+b << " " << 0.0 << " " << 0.0 << endl;
     }
 
 
