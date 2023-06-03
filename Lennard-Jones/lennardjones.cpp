@@ -11,14 +11,14 @@ using namespace std;
 
 #define Pi 3.14159265358979 //Valor del número Pi
 #define N 16 //Número de átomos que conforman nuestro sistema
-#define L 10 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada
-#define nT 6 //Cantidad de distintos valores de temperatura que se estudiarán
+#define L 4 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada
+#define nT 1 //Cantidad de distintos valores de temperatura que se estudiarán
 #define T1 20 //Instante inicial de tiempo para estudiar las funciones de interés
-#define T2 30 //Instante final de tiempo para estudiar las funciones de interés
-#define K 1.3 //Factor en el que se incrementa la velocidad de las partículas al calentar el sistema
+#define T2 50 //Instante final de tiempo para estudiar las funciones de interés
+#define K 1 //Factor en el que se incrementa la velocidad de las partículas al calentar el sistema
 #define v0 1 //Módulo de la velocidad inicial de las partículas en la caja
 #define s 1e-4 //Paso con el que se aplica el algoritmo
-#define S 30 //Límite de tiempo hasta el que se considera la simulación
+#define S 50 //Límite de tiempo hasta el que se considera la simulación
 #define D 200 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
 #define R 1 //Separación mínimia inicial entre cada par de partículas
 #define E true //Indica si se desea calcular o no la energía del sistema
@@ -26,6 +26,7 @@ using namespace std;
 //Cabecera con todas las funciones que hemos definido
 void cond_inic_aleatorio(int n,gsl_rng *tau);
 void cond_inic_vx(int n, gsl_rng *tau);
+void cond_inic_unif(int n,gsl_rng *tau);
 void cond_inic_panal(int n);
 double dist(double x[], double y[]);
 bool ac(double a[][2], double r[][2], int n, double& V);
@@ -49,8 +50,9 @@ int main(void)
     gsl_rng_set(tau,semilla); //Inicializamos la semilla
     
     //Generamos aleatoriamente las condiciones iniciales
-    cond_inic_aleatorio(N, tau);
+    //cond_inic_aleatorio(N, tau);
     //cond_inic_vx(N,tau);
+    cond_inic_unif(N,tau);
     //cond_inic_panal(N);
 
     //Copiamos las velocidades y posiciones iniciales aleatorias
@@ -111,14 +113,12 @@ int main(void)
                 fichOPos << r[i][0] << ", " << r[i][1] << endl;
                 fichOVel << v[i][0] << " " << v[i][1] << " " << v2 << endl;
                 //Calculamos los valores máximos de velocidad para hacer el histograma luego
-                /*
                 if(vMx<abs(v[i][0]))
                     vMx=abs(v[i][0]);
                 if(vMy<abs(v[i][1]))
                     vMy=abs(v[i][1]);
                 if(vMm<v2)
                     vMm=v2;
-                */
             }
             fichOPos << endl;
             fichOE << "0.00 " << T << " ";
@@ -152,14 +152,12 @@ int main(void)
                         v2=sqrt(v2);
                         fichOPos << r[i][0] << ", " << r[i][1] << endl;
                         fichOVel << v[i][0] << " " << v[i][1] << " " << v2 << endl;
-                        /*
                         if(vMx<abs(v[i][0]))
                             vMx=abs(v[i][0]);
                         if(vMy<abs(v[i][1]))
                             vMy=abs(v[i][1]);
                         if(vMm<v2)
                             vMm=v2;
-                        */
                     }
                     fichOPos << endl;
                     if(E)
@@ -177,7 +175,7 @@ int main(void)
             P=P/((floor((T2-T1)/(s*D))+1)*4*L); //La presión es el cambio de momento total por unidad de tiempo y área (4L al estar en dos dimensiones)
 
             //Pasamos a un fichero la información obtenida
-            fichOPT << t << ", " << P << endl;
+            //fichOPT << t << ", " << P << endl;
             l++;
         } while (l<=nT);
 
@@ -188,7 +186,7 @@ int main(void)
         fichOPT.close();
 
         //Histograma de velocidades
-        //HistVel(T1,T2,N,vMx,vMy,vMm);
+        HistVel(T1,T2,N,vMx,vMy,vMm);
     }
 
     return 0;
@@ -252,7 +250,7 @@ void cond_inic_aleatorio(int n,gsl_rng *tau)
 void cond_inic_vx(int n, gsl_rng *tau)
 {
     int i,j,k;
-    double v,r[N][2],r1[2],r2[2];
+    double r[N][2],r1[2],r2[2];
     ofstream fichOut;
 
     fichOut.open("pos-vel_iniciales.txt");
@@ -289,6 +287,33 @@ void cond_inic_vx(int n, gsl_rng *tau)
     }
 
     fichOut.close();    
+
+    return;
+}
+
+//Función cond_inic_unif: genera unas condiciones iniciales para las partículas de forma que estas se distribuyen
+//de manera uniforme por la caja y tienen una velocidad inicial de módulo v0 y dirección aleatoria.
+//Argumentos: n, número de partículas
+void cond_inic_unif(int n,gsl_rng *tau)
+{
+    int i,j,m;
+    double l,v;
+    ofstream fichOut;
+
+    fichOut.open("pos-vel_iniciales.txt");
+    fichOut.precision(8);
+
+    m=floor(sqrt(n)); //Número de partículas en cada línea horizontal
+    l=(L*1.0)/m; //Distancia entre partículas
+    //Distribuimos las partículas uniformemente por la caja y con velocidades aleatorias
+    for(i=0;i<m;i++)
+    {
+        for(j=0;j<m;j++)
+        {
+            v=2*Pi*gsl_rng_uniform(tau);
+            fichOut << i*l << " " << j*l << " " << v0*cos(v) << " " << v0*sin(v) << endl;
+        }
+    }
 
     return;
 }
