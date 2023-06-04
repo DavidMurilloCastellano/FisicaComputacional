@@ -7,16 +7,23 @@ from math import sqrt, pi
 #==========================================================================
 #Parámetros
 v0="0"
+T=5.50946
 
 #=========================================================================
 
 
 #Ficheros
-file_in= "histograma-velocidades-v0="+v0+".txt" # Nombre del fichero de datos con la nube de puntos a graficar
-file_temp= "particulas-v0="+v0+"_temperatura.txt" # Nombre del fichero con la temperatura calculada para el sistema
-file_out1 = "hist-vel-X-v0="+v0+".pdf" # Nombre del fichero de salida
-file_out2= "hist-vel-Y-v0="+v0+".pdf" # Nombre del fichero de salida
-file_out3= "hist-vel-Mod-v0="+v0+".pdf" # Nombre del fichero de salida
+if T==0:
+    file_in= "histograma-velocidades-v0="+v0+".txt" # Nombre del fichero de datos con la nube de puntos a graficar
+    file_temp= "particulas-v0="+v0+"_temperatura.txt" # Nombre del fichero con la temperatura calculada para el sistema
+    file_out1 = "hist-vel-X-v0="+v0+".pdf" # Nombre del fichero de salida
+    file_out2= "hist-vel-Y-v0="+v0+".pdf" # Nombre del fichero de salida
+    file_out3= "hist-vel-Mod-v0="+v0+".pdf" # Nombre del fichero de salida
+else:
+    file_in= "histograma-velocidades-v0="+v0+"_temp-T="+str(T)+".txt" # Nombre del fichero de datos con la nube de puntos a graficar
+    file_out1 = "hist-vel-X-v0="+v0+"_temp-T="+str(T)+".pdf" # Nombre del fichero de salida
+    file_out2= "hist-vel-Y-v0="+v0+"_temp-T="+str(T)+".pdf" # Nombre del fichero de salida
+    file_out3= "hist-vel-Mod-v0="+v0+"_temp-T="+str(T)+".pdf" # Nombre del fichero de salida
 
 #Funciones a ajustar
 def Pm(v,T):
@@ -30,8 +37,11 @@ def Px(v,T):
 # Lectura del fichero de datos
 # ========================================
 # Obtenemos la temperatura (si no se ha calentado la simulación, en tal caso, las pasamos manualmente)
-with open(file_temp, "r") as f:
-    temp = float(f.read())
+if T==0:
+    with open(file_temp, "r") as f:
+        temp = float(f.read())
+else:
+    temp=T
 
 #Pasamos el fichero con la nube de puntos a una cadena de texto
 with open(file_in, "r") as f:
