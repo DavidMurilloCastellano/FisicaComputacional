@@ -39,9 +39,9 @@ void HistVel(float a, float b, int n, double vMx, double vMy, double vMm, double
 int main(void)
 {
     int i,j,k,l,t0[10];
-    double a[N][2], r[N][2], v[N][2], v2, h, T, V, t, vMx, vMy, vMm, P;
+    double a[N][2], r[N][2], v[N][2], v2, h, T, V, t, vMx, vMy, vMm, P, r0[2], r1[2], desp, d, x, y;
     ifstream fichIn;
-    ofstream fichOPos, fichOVel, fichOE, fichOT, fichOPT;
+    ofstream fichOPos, fichOVel, fichOE, fichOT, fichOPT, fichODesp;
     bool div;
 
     gsl_rng *tau;
@@ -76,6 +76,7 @@ int main(void)
     fichOE.open("particulas-v0="+to_string(v0)+"_energias.txt");
     fichOT.open("particulas-v0="+to_string(v0)+"_temperatura.txt");
     fichOPT.open("particulas-v0="+to_string(v0)+"_P-T.txt");
+    fichODesp.open("particulas_desplazamiento.txt");
 
     
     //Comprobamos que el número de partículas coincide con la cantidad de datos leídos
@@ -124,6 +125,10 @@ int main(void)
         div=ac(a,r,N,V);
         if(E)
             fichOE << V << " " << T+V <<endl;
+        //Copiamos la posición inicial de la primera partícula
+        r0[0]=r[0][0]; r0[1]=r[0][1];
+        x=r0[0]; y=r0[1];
+        desp=0.0;
         do
         {
             //Calentamos el sistema aumentando la velocidad de las partículas
@@ -135,14 +140,21 @@ int main(void)
                     v[i][1]=K*v[i][1];
                 }
             }
+
             //Aplicamos el algoritmo de Verlet
-            
             while(h<=t0[l] && div)
             {
                 if(h>=T1 && h<=T2)
                     P=P+rh(r,v,a,s,N);
                 else
                     rh(r,v,a,s,N);
+
+                //Calculamos el desplazamiento de la primera partícula respecto a su posición inicial
+                r1[0]=r[0][0]; r1[1]=r[0][1];
+                d=dist(r1,r0);
+                desp=desp+d*d;
+                r0[0]=x; r0[1]=y;
+
                 vh(v,a,s,N);
                 div=ac(a,r,N,V);
                 vh(v,a,s,N);
@@ -169,6 +181,10 @@ int main(void)
                     fichOPos << endl;
                     if(E)
                         fichOE << h << " " << T << " " << V << " " << T+V << endl;
+
+                    //Calculamos el desplazamiento medio al cuadrado de la primera partícula respecto su posición de equilibrio
+                    fichODesp << h << ", " << desp/D << endl;
+                    desp=0.0;
                 }
 
                 h=h+s; k++;
@@ -198,8 +214,7 @@ int main(void)
         fichOE.close();
         fichOT.close();
         fichOPT.close();
-
-        
+        fichODesp.close();
     }
 
     return 0;
