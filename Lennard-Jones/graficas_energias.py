@@ -35,6 +35,8 @@ fig=plt.figure()
 plt.plot(t,K,label="Cinética")
 plt.plot(t,V,label="Potencial")
 plt.plot(t,T,label="Total")
+plt.xlabel("Tiempo")
+plt.ylabel("Energía")
 plt.legend()
 fig.savefig(file_out)
 

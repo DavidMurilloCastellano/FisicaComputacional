@@ -10,12 +10,12 @@
 using namespace std;
 
 #define Pi 3.14159265358979 //Valor del número Pi
-#define N 21 //Número de átomos que conforman nuestro sistema
-#define L 5.3 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada
-#define nT 1 //Cantidad de distintos valores de temperatura que se estudiarán
+#define N 16 //Número de átomos que conforman nuestro sistema
+#define L 4 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada
+#define nT 5 //Cantidad de distintos valores de temperatura que se estudiarán
 #define T1 20 //Instante inicial de tiempo para estudiar las funciones de interés
 #define T2 50 //Instante final de tiempo para estudiar las funciones de interés
-#define K 1 //Factor en el que se incrementa la velocidad de las partículas al calentar el sistema
+#define K 1.5 //Factor en el que se incrementa la velocidad de las partículas al calentar el sistema
 #define v0 0 //Módulo de la velocidad inicial de las partículas en la caja
 #define s 1e-4 //Paso con el que se aplica el algoritmo
 #define S 50 //Límite de tiempo hasta el que se considera la simulación
@@ -33,15 +33,15 @@ bool ac(double a[][2], double r[][2], int n, double& V);
 double rh(double r[][2], double v[][2], double a[][2], double h, int n);
 void vh(double v[][2], double a[][2], double h, int n);
 double temp(float a, float b,int n);
-void HistVel(float a, float b, int n, double vMx, double vMy, double vMm);
+void HistVel(float a, float b, int n, double vMx, double vMy, double vMm, double T);
 
 
 int main(void)
 {
-    int i,j,k,l;
+    int i,j,k,l,t0[10];
     double a[N][2], r[N][2], v[N][2], v2, h, T, V, t, vMx, vMy, vMm, P;
     ifstream fichIn;
-    ofstream fichOPos, fichOVel, fichOE, fichOPT;
+    ofstream fichOPos, fichOVel, fichOE, fichOT, fichOPT;
     bool div;
 
     gsl_rng *tau;
@@ -52,8 +52,8 @@ int main(void)
     //Generamos aleatoriamente las condiciones iniciales
     //cond_inic_aleatorio(N, tau);
     //cond_inic_vx(N,tau);
-    //cond_inic_unif(N,tau);
-    cond_inic_panal(N);
+    cond_inic_unif(N,tau);
+    //cond_inic_panal(N);
 
     //Copiamos las velocidades y posiciones iniciales aleatorias
     fichIn.open("pos-vel_iniciales.txt");
@@ -74,6 +74,7 @@ int main(void)
     fichOPos.open("particulas-v0="+to_string(v0)+"_posiciones.txt");
     fichOVel.open("particulas-v0="+to_string(v0)+"_velocidades.txt");
     fichOE.open("particulas-v0="+to_string(v0)+"_energias.txt");
+    fichOT.open("particulas-v0="+to_string(v0)+"_temperatura.txt");
     fichOPT.open("particulas-v0="+to_string(v0)+"_P-T.txt");
 
     
@@ -82,7 +83,47 @@ int main(void)
         fichOPos << "El número de partículas indicado no coincide con la cantidad de datos iniciales." << endl;
     else
     {
-        l=1;
+        l=1; k=1;
+        h=s;
+        fichOPos.precision(6); 
+        fichOVel.precision(6);
+        T=V=P=0.0;
+        vMx=vMy=vMm=0.0;
+        //Escribimos un vector con los instantes de tiempo en los que calentamos el sistema
+        t0[0]=10; //Esperamos a que el sistema alcance el equilibrio
+        t0[1]=20; t0[2]=30; t0[3]=35; t0[4]=45;
+        t0[nT]=S;
+        if(nT>9)
+            fichOT << "Aumentar la dimensión del vector de temperaturas para calentar" << endl;
+
+        //Volcamos las posiciones y velocidades iniciales
+        fichOVel << "0.00" << endl;
+        for(i=0;i<N;i++)
+        {
+            v2=v[i][0]*v[i][0]+v[i][1]*v[i][1];
+
+            //Calculamos la energía cinética inicial
+            if(E)
+                T=T+v2/2;
+
+            v2=sqrt(v2);
+            fichOPos << r[i][0] << ", " << r[i][1] << endl;
+            fichOVel << v[i][0] << " " << v[i][1] << " " << v2 << endl;
+            //Calculamos los valores máximos de velocidad para hacer el histograma luego
+            if(vMx<abs(v[i][0]))
+                vMx=abs(v[i][0]);
+            if(vMy<abs(v[i][1]))
+                vMy=abs(v[i][1]);
+            if(vMm<v2)
+                vMm=v2;
+        }
+        fichOPos << endl;
+        fichOE << "0.00 " << T << " ";
+
+        //Calculamos las aceleraciones (y energía potencial) iniciales
+        div=ac(a,r,N,V);
+        if(E)
+            fichOE << V << " " << T+V <<endl;
         do
         {
             //Calentamos el sistema aumentando la velocidad de las partículas
@@ -94,43 +135,9 @@ int main(void)
                     v[i][1]=K*v[i][1];
                 }
             }
-            h=s; k=1;
-            fichOPos.precision(6); 
-            fichOVel.precision(6);
-            T=V=0.0;
-            vMx=vMy=vMm=0.0;
-            //Volcamos las posiciones y velocidades iniciales
-            fichOVel << "0.00" << endl;
-            for(i=0;i<N;i++)
-            {
-                v2=v[i][0]*v[i][0]+v[i][1]*v[i][1];
-
-                //Calculamos la energía cinética inicial
-                if(E)
-                    T=T+v2/2;
-
-                v2=sqrt(v2);
-                fichOPos << r[i][0] << ", " << r[i][1] << endl;
-                fichOVel << v[i][0] << " " << v[i][1] << " " << v2 << endl;
-                //Calculamos los valores máximos de velocidad para hacer el histograma luego
-                if(vMx<abs(v[i][0]))
-                    vMx=abs(v[i][0]);
-                if(vMy<abs(v[i][1]))
-                    vMy=abs(v[i][1]);
-                if(vMm<v2)
-                    vMm=v2;
-            }
-            fichOPos << endl;
-            fichOE << "0.00 " << T << " ";
-
-            //Calculamos las aceleraciones (y energía potencial) iniciales
-            div=ac(a,r,N,V);
-            if(E)
-                fichOE << V << " " << T+V <<endl;
-
             //Aplicamos el algoritmo de Verlet
-            P=0.0;
-            while(h<=S && div)
+            
+            while(h<=t0[l] && div)
             {
                 if(h>=T1 && h<=T2)
                     P=P+rh(r,v,a,s,N);
@@ -171,11 +178,17 @@ int main(void)
             }    
 
             //Calculamos la temperatura y la presión en el intervalo especificado en el guion
-            t=temp(T1,T2,N);
+            t=temp(t0[l-1],t0[l],N);
             P=P/((floor((T2-T1)/(s*D))+1)*4*L); //La presión es el cambio de momento total por unidad de tiempo y área (4L al estar en dos dimensiones)
 
             //Pasamos a un fichero la información obtenida
+            fichOT << t <<endl;
             //fichOPT << t << ", " << P << endl;
+
+            //Histograma de velocidades
+            HistVel(t0[l-1],t0[l],N,vMx,vMy,vMm,t);
+
+            vMx=vMy=vMm=0.0;
             l++;
         } while (l<=nT);
 
@@ -183,10 +196,10 @@ int main(void)
         fichOPos.close();
         fichOVel.close();
         fichOE.close();
+        fichOT.close();
         fichOPT.close();
 
-        //Histograma de velocidades
-        HistVel(T1,T2,N,vMx,vMy,vMm);
+        
     }
 
     return 0;
@@ -500,19 +513,17 @@ void vh(double v[][2], double a[][2], double h, int n)
 }
 
 //Función temp: calcula la temperatura media del sistema en un intervalo de tiempo. Para ello, lee los datos de
-//energía cinética del sistema del fichero "particulas_energias.txt" y escribe la temperatura obtenida en
-//particulas_temperatura.txt.
+//energía cinética del sistema del fichero "particulas_energias.txt".
 //Argumentos: a,b, extremos del intervalo en el que se calcula la temperatura; n, número de partículas del sistema; 
 double temp(float a, float b,int n)
 {
     double t,aux,h;
     int i;
     ifstream fichIn;
-    ofstream fichOut;
 
     t=0.0;
     fichIn.open("particulas-v0="+to_string(v0)+"_energias.txt");
-    fichOut.open("particulas-v0="+to_string(v0)+"_temperatura.txt");
+    
 
     if(a>=0 && b<=S && a<b) //Se comprueba que los límites están dentro del rango de tiempo calculado
     {
@@ -535,11 +546,8 @@ double temp(float a, float b,int n)
                                             //en [a,b]) 
         }
     }
-
-    fichOut << t;
     
     fichIn.close();
-    fichOut.close();
 
     return t;
 }
@@ -548,7 +556,7 @@ double temp(float a, float b,int n)
 //de tiempo especificado, de la velocidad que llevan en cada componente y el módulo.
 //Argumentos: a,b, límites del intervalo donde se calcula el promedio; n, número de partículas; T, temperatura del
 //sistema
-void HistVel(float a, float b, int n, double vMx, double vMy, double vMm)
+void HistVel(float a, float b, int n, double vMx, double vMy, double vMm, double T)
 {
     float t, aux, vx[N], vy[N], vm[N], lx, ly, lm;
     int i, j, M;
@@ -562,7 +570,10 @@ void HistVel(float a, float b, int n, double vMx, double vMy, double vMm)
         vx[i]=vy[i]=vm[i]=0.0;
     }
     fichIn.open("particulas-v0="+to_string(v0)+"_velocidades.txt");
-    fichOut.open("histograma-velocidades-v0="+to_string(v0)+".txt");
+    if(nT==1)
+        fichOut.open("histograma-velocidades-v0="+to_string(v0)+".txt");
+    else
+        fichOut.open("histograma-velocidades-v0="+to_string(v0)+"_temp-T="+to_string(T)+".txt");
 
     if(a>=0 && b<=S && a<b) //Se comprueba que los límites están dentro del rango de tiempo calculado
     {

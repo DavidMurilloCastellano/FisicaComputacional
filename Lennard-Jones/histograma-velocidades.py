@@ -21,7 +21,6 @@ file_out3= "hist-vel-Mod-v0="+v0+".pdf" # Nombre del fichero de salida
 #Funciones a ajustar
 def Pm(v,T):
      v2=np.multiply(v,v)
-     #return np.multiply(v2,np.exp(-v2/(2*T)))*sqrt(2/(pi*pow(T,3)))
      return np.multiply(v,np.exp(-v2/(2*T)))/T
 
 def Px(v,T):
@@ -30,7 +29,7 @@ def Px(v,T):
 
 # Lectura del fichero de datos
 # ========================================
-# Obtenemos la temperatura
+# Obtenemos la temperatura (si no se ha calentado la simulación, en tal caso, las pasamos manualmente)
 with open(file_temp, "r") as f:
     temp = float(f.read())
 
