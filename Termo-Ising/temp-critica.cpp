@@ -8,7 +8,7 @@
 #include "gsl_rng.h" //Libreria para generación de números aleatorios
 using namespace std;
 
-#define N 32 //Número máximo de nodos del sistema en cada eje
+#define N 1024 //Número máximo de nodos del sistema en cada eje
 #define pMC 5e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
 #define T1 2.17 //Extremo inferior del intervalo de temperaturas
 #define T2 2.39 //Extremo superior del intervalo de temperaturas
@@ -37,7 +37,7 @@ int main (void)
     fichOCeT.open("calor_esp-temp.txt");
 
     //Ejecutamos el método de Monte-Carlo para distintos tamaños del sistema
-    N0=8;
+    N0=16;
     do
     {
         //Cálculo de constantes
