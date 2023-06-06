@@ -12,7 +12,7 @@ using namespace std;
 #define pMC 5e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
 #define T1 2.17 //Extremo inferior del intervalo de temperaturas
 #define T2 2.302 //Extremo superior del intervalo de temperaturas
-#define nT 12 //Número máximo de valores de temperatura que se van a considerar en el intervalo [T1,T2]
+#define nT 13 //Número máximo de valores de temperatura que se van a considerar en el intervalo [T1,T2]
 
 //Cabecera con todas las funciones que hemos definido
 int b2i(bool b);

@@ -8,7 +8,7 @@
 #include "gsl_rng.h" //Libreria para generación de números aleatorios
 using namespace std;
 
-#define N 64 //Número de nodos del sistema en cada eje
+#define N 128 //Número de nodos del sistema en cada eje
 #define P 32 //Número de puntos que se grafican (<=N)
 #define pMC 1e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
 #define T1 1.5 //Extremo inferior del intervalo de temperaturas
