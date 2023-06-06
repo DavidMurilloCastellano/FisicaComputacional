@@ -7,7 +7,7 @@ import io
 
 # Parámetros
 # ========================================
-N="2048"
+N="64"
 
 
 
@@ -60,7 +60,7 @@ for temp in T:
     c=next(color)
     plt.errorbar(x,frames_data[i][1],yerr=frames_data[i][2],fmt='none',capsize=2,c=c)
     i=i+1
-plt.title("Función de correlación")
+plt.title("Función de correlación (N="+N+")")
 box = ax.get_position()
 ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
 plt.legend(T,loc='center left', bbox_to_anchor=(1, 0.5))
@@ -82,7 +82,7 @@ for temp in T:
     m.append(optimizedParameters[0])
     n.append(optimizedParameters[1])
     i=i+1
-plt.title("Ajuste lineal para el cálculo de la longitud de correlación")
+plt.title("Ajuste lineal para el cálculo de la longitud de correlación (N="+N+")")
 box = ax.get_position()
 ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
 plt.legend(T,loc='center left', bbox_to_anchor=(1, 0.5))
