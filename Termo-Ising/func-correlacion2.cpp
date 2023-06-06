@@ -11,9 +11,9 @@ using namespace std;
 #define N 128 //Número de nodos del sistema en cada eje
 #define P 128 //Número de puntos que se grafican (<=N)
 #define pMC 1e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
-#define T1 2.275 //Extremo inferior del intervalo de temperaturas
-#define T2 2.315 //Extremo superior del intervalo de temperaturas
-#define nT 6 //Número de valores de temperatura que se van a considerar en el intervalo [T1,T2]
+#define T1 1.5 //Extremo inferior del intervalo de temperaturas
+#define T2 3.5 //Extremo superior del intervalo de temperaturas
+#define nT 10 //Número de valores de temperatura que se van a considerar en el intervalo [T1,T2]
 
 //Cabecera con todas las funciones que hemos definido
 int b2i(bool b);
@@ -35,7 +35,7 @@ int main (void)
 
     //Cálculo de constantes
     M=N*N; L=N-1;
-    fichO.open("correlacion-N="+to_string(N)+".txt");
+    fichO.open("correlacion2-N="+to_string(N)+".txt");
 
     //El algoritmo se ejecuta para cada una de las temperaturas consideradas
     h=(T2-T1)/(nT-1); 
