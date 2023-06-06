@@ -11,8 +11,8 @@ using namespace std;
 #define N 1024 //Número máximo de nodos del sistema en cada eje
 #define pMC 5e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
 #define T1 2.17 //Extremo inferior del intervalo de temperaturas
-#define T2 2.39 //Extremo superior del intervalo de temperaturas
-#define nT 20 //Número máximo de valores de temperatura que se van a considerar en el intervalo [T1,T2]
+#define T2 2.302 //Extremo superior del intervalo de temperaturas
+#define nT 12 //Número máximo de valores de temperatura que se van a considerar en el intervalo [T1,T2]
 
 //Cabecera con todas las funciones que hemos definido
 int b2i(bool b);
@@ -54,8 +54,8 @@ int main (void)
         do
         {
             //Partimos de una configuración ordenada
-            for(i1=0;i1<N;i1++)
-                for(i2=0;i2<N;i2++)
+            for(i1=0;i1<N0;i1++)
+                for(i2=0;i2<N0;i2++)
                     A[i1][i2]=true;
 
             //Calculamos el valor inicial de la energía del sistema
@@ -70,7 +70,7 @@ int main (void)
                 //Elegimos un nodo al azar y aplicamos el algoritmo durante 1 pMC
                 for(j=0; j<M; j++)
                 {
-                    n=gsl_rng_uniform_int(tau,N); m=gsl_rng_uniform_int(tau,N);
+                    n=gsl_rng_uniform_int(tau,N0); m=gsl_rng_uniform_int(tau,N0);
                     e=DEnergia(A,n,m,N0);
                     p=exp(-e/T);
                     if(p>1 || gsl_rng_uniform(tau)<p)
@@ -90,7 +90,7 @@ int main (void)
                 //Elegimos un nodo al azar y aplicamos el algoritmo durante 1 pMC
                 for(j=0; j<M; j++)
                 {
-                    n=gsl_rng_uniform_int(tau,N); m=gsl_rng_uniform_int(tau,N);
+                    n=gsl_rng_uniform_int(tau,N0); m=gsl_rng_uniform_int(tau,N0);
                     e=DEnergia(A,n,m,N0);
                     p=exp(-e/T);
                     if(p>1 || gsl_rng_uniform(tau)<p)
