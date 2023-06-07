@@ -13,10 +13,10 @@ N="128"
 
 
 #Ficheros
-file_in = "correlacion-N="+N+".txt" # Nombre del fichero de datos
-file_outD = "correlacion-N="+N+".pdf" # Nombre del archivo con la gráfica de la nube de puntos
-file_outF = "fit_correlacion-N="+N+".pdf" # Nombre del archivo con la gráfica del ajuste
-file_outfit= "fit_correlacion-N="+N+".txt" #Nombre del fichero con los parámetros del ajuste
+file_in = "correlacion2-N="+N+".txt" # Nombre del fichero de datos
+file_outD = "correlacion2-N="+N+".pdf" # Nombre del archivo con la gráfica de la nube de puntos
+file_outF = "fit_correlacion2-N="+N+".pdf" # Nombre del archivo con la gráfica del ajuste
+file_outfit= "fit_correlacion2-N="+N+".txt" #Nombre del fichero con los parámetros del ajuste
 
 #Función a ajustar
 def func(x, a, b):

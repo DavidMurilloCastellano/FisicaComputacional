@@ -8,11 +8,11 @@
 #include "gsl_rng.h" //Libreria para generación de números aleatorios
 using namespace std;
 
-#define N 1024 //Número máximo de nodos del sistema en cada eje
+#define N 256 //Número máximo de nodos del sistema en cada eje
 #define pMC 5e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
 #define T1 2.17 //Extremo inferior del intervalo de temperaturas
-#define T2 2.302 //Extremo superior del intervalo de temperaturas
-#define nT 13 //Número máximo de valores de temperatura que se van a considerar en el intervalo [T1,T2]
+#define T2 2.39 //Extremo superior del intervalo de temperaturas
+#define nT 20 //Número máximo de valores de temperatura que se van a considerar en el intervalo [T1,T2]
 
 //Cabecera con todas las funciones que hemos definido
 int b2i(bool b);
