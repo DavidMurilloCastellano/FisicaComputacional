@@ -4,23 +4,25 @@ import scipy.optimize as opt
 from matplotlib.pyplot import cm
 import numpy as np
 import io
+from math import exp
 
 # Parámetros
 # ========================================
-N="128"
+N="2048"
+ajuste=True
 
 
 
 
 #Ficheros
-file_in = "correlacion2-N="+N+".txt" # Nombre del fichero de datos
-file_outD = "correlacion2-N="+N+".pdf" # Nombre del archivo con la gráfica de la nube de puntos
-file_outF = "fit_correlacion2-N="+N+".pdf" # Nombre del archivo con la gráfica del ajuste
-file_outfit= "fit_correlacion2-N="+N+".txt" #Nombre del fichero con los parámetros del ajuste
+file_in = "correlacion-N="+N+".txt" # Nombre del fichero de datos
+file_outD = "correlacion-N="+N+".pdf" # Nombre del archivo con la gráfica de la nube de puntos
+file_outF = "fit_correlacion-N="+N+".pdf" # Nombre del archivo con la gráfica del ajuste
+file_outfit= "fit_correlacion-N="+N+".txt" #Nombre del fichero con los parámetros del ajuste
 
 #Función a ajustar
-def func(x, a, b):
-     return a*x+b
+def func(x, a, b, c):
+     return a+b*exp(-x/c)
 
 # Lectura del fichero de datos
 # ========================================
