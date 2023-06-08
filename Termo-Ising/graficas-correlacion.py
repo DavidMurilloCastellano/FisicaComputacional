@@ -9,8 +9,6 @@ from math import exp
 # Parámetros
 # ========================================
 N="2048"
-ajuste=True
-
 
 
 
@@ -72,19 +70,21 @@ fig2=plt.figure()
 ax = plt.subplot(111)
 x=frames_data[0][0]
 color = iter(cm.rainbow(np.linspace(0, 1, len(T))))
-m=[]
-n=[]
+a=[]
+b=[]
+c=[]
 i=0
 for temp in T:
     c=next(color)
-    y=frames_data[i][3]
-    plt.errorbar(x,y,yerr=frames_data[i][4],fmt='none',capsize=2,c=c)
+    y=frames_data[i][1]
+    plt.errorbar(x,y,yerr=frames_data[i][2],fmt='none',capsize=2,c=c)
     optimizedParameters, pcov = opt.curve_fit(func, x, y)
     plt.plot(x, func(x, *optimizedParameters),c=c)
-    m.append(optimizedParameters[0])
-    n.append(optimizedParameters[1])
+    a.append(optimizedParameters[0])
+    b.append(optimizedParameters[1])
+    c.append(optimizedParameters[2])
     i=i+1
-plt.title("Ajuste lineal para el cálculo de la longitud de correlación (N="+N+")")
+plt.title("Cálculo de la longitud de correlación (N="+N+")")
 box = ax.get_position()
 ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
 plt.legend(T,loc='center left', bbox_to_anchor=(1, 0.5))
@@ -93,4 +93,4 @@ fig2.savefig(file_outF)
 # Pasamos a un fichero la info del ajuste
 with open(file_outfit, 'w') as f:
     for j in range(len(T)):
-        f.write(str(m[j])+' '+str(n[j])+'\n')
+        f.write(str(a[j])+' '+str(b[j])+' '+str(c[j])+'\n')

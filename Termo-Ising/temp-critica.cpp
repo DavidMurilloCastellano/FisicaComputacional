@@ -9,7 +9,7 @@
 using namespace std;
 
 #define N 256 //Número máximo de nodos del sistema en cada eje
-#define pMC 5e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
+#define pMC 1e6 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
 #define T1 2.17 //Extremo inferior del intervalo de temperaturas
 #define T2 2.39 //Extremo superior del intervalo de temperaturas
 #define nT 20 //Número máximo de valores de temperatura que se van a considerar en el intervalo [T1,T2]
