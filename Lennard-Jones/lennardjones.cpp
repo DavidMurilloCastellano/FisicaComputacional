@@ -15,13 +15,15 @@ using namespace std;
 #define nT 5 //Cantidad de distintos valores de temperatura que se estudiarán
 #define T1 20 //Instante inicial de tiempo para estudiar las funciones de interés
 #define T2 50 //Instante final de tiempo para estudiar las funciones de interés
-#define K 1.5 //Factor en el que se incrementa la velocidad de las partículas al calentar el sistema
+#define K 1.1 //Factor en el que se incrementa la velocidad de las partículas al calentar el sistema
 #define v0 0 //Módulo de la velocidad inicial de las partículas en la caja
 #define s 1e-4 //Paso con el que se aplica el algoritmo
-#define S 50 //Límite de tiempo hasta el que se considera la simulación
+#define S 300 //Límite de tiempo hasta el que se considera la simulación
 #define D 200 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
 #define R 1 //Separación mínimia inicial entre cada par de partículas
 #define E true //Indica si se desea calcular o no la energía del sistema
+#define Desp false //Indica si se quiere calcular el desplazamiento de una partícula respecto su posición inicial
+#define Sep true //Indica si se quiere calcular la distancia entre dos partículas
 
 //Cabecera con todas las funciones que hemos definido
 void cond_inic_aleatorio(int n,gsl_rng *tau);
@@ -39,9 +41,9 @@ void HistVel(float a, float b, int n, double vMx, double vMy, double vMm, double
 int main(void)
 {
     int i,j,k,l,t0[10];
-    double a[N][2], r[N][2], v[N][2], v2, h, T, V, t, vMx, vMy, vMm, P, r0[2], r1[2], desp, d, x, y;
+    double a[N][2], r[N][2], v[N][2], v2, h, T, V, t, vMx, vMy, vMm, P, r0[2], r1[2], desp, d, x, y, sep;
     ifstream fichIn;
-    ofstream fichOPos, fichOVel, fichOE, fichOT, fichOPT, fichODesp;
+    ofstream fichOPos, fichOVel, fichOE, fichOT, fichOPT, fichODesp, fichOSep;
     bool div;
 
     gsl_rng *tau;
@@ -77,6 +79,7 @@ int main(void)
     fichOT.open("particulas-v0="+to_string(v0)+"_temperatura.txt");
     fichOPT.open("particulas-v0="+to_string(v0)+"_P-T.txt");
     fichODesp.open("particulas_desplazamiento.txt");
+    fichOSep.open("particulas_separacion.txt");
 
     
     //Comprobamos que el número de partículas coincide con la cantidad de datos leídos
@@ -91,8 +94,10 @@ int main(void)
         T=V=P=0.0;
         vMx=vMy=vMm=0.0;
         //Escribimos un vector con los instantes de tiempo en los que calentamos el sistema
-        t0[0]=10; //Esperamos a que el sistema alcance el equilibrio
-        t0[1]=20; t0[2]=30; t0[3]=35; t0[4]=45;
+        t0[0]=20; //Esperamos a que el sistema alcance el equilibrio
+        t0[1]=60;
+        for(i=2;i<nT;i++)
+            t0[i]=t0[i-1]+60;
         t0[nT]=S;
         if(nT>9)
             fichOT << "Aumentar la dimensión del vector de temperaturas para calentar" << endl;
@@ -126,10 +131,20 @@ int main(void)
         if(E)
             fichOE << V << " " << T+V <<endl;
         //Copiamos la posición inicial de la primera partícula
-        r0[0]=r[0][0]; r0[1]=r[0][1];
-        x=r0[0]; y=r0[1];
-        desp=0.0;
-        do
+        if(Desp)
+        {
+            r0[0]=r[1][0]; r0[1]=r[1][1];
+            x=r0[0]; y=r0[1];
+            desp=0.0;
+        }
+        
+        if(Sep)
+        {
+            sep=0.0;
+            fichOSep << "0, 1" << endl;
+        }
+        
+        while (l<=nT)
         {
             //Calentamos el sistema aumentando la velocidad de las partículas
             if(l>1)
@@ -142,7 +157,7 @@ int main(void)
             }
 
             //Aplicamos el algoritmo de Verlet
-            while(h<=t0[l] && div)
+            while(h<t0[l] && div)
             {
                 if(h>=T1 && h<=T2)
                     P=P+rh(r,v,a,s,N);
@@ -150,11 +165,24 @@ int main(void)
                     rh(r,v,a,s,N);
 
                 //Calculamos el desplazamiento de la primera partícula respecto a su posición inicial
-                r1[0]=r[0][0]; r1[1]=r[0][1];
-                d=dist(r1,r0);
-                desp=desp+d*d;
-                r0[0]=x; r0[1]=y;
+                if(Desp)
+                {
+                    r1[0]=r[1][0]; r1[1]=r[1][1];
+                    d=dist(r1,r0);
+                    desp=desp+d*d;
+                    r0[0]=x; r0[1]=y;
+                }
 
+                //Calculamos la separación cuadrática entre las dos primeras partículas
+                if(Sep)
+                {
+                    r0[0]=r[6][0]; r0[1]=r[6][1];
+                    r1[0]=r[7][0]; r1[1]=r[7][1];
+
+                    d=dist(r0,r1);
+                    sep=sep+d*d;
+                }
+                
                 vh(v,a,s,N);
                 div=ac(a,r,N,V);
                 vh(v,a,s,N);
@@ -182,9 +210,15 @@ int main(void)
                     if(E)
                         fichOE << h << " " << T << " " << V << " " << T+V << endl;
 
-                    //Calculamos el desplazamiento medio al cuadrado de la primera partícula respecto su posición de equilibrio
-                    fichODesp << h << ", " << desp/D << endl;
+                    //Calculamos el desplazamiento cuadrático medio de la primera partícula respecto su posición de equilibrio
+                    if(Desp)
+                        fichODesp << h << ", " << desp/D << endl;
                     desp=0.0;
+
+                    //Calculamos la separación cuadrática media entre las dos primeras partículas
+                    if(Sep)
+                        fichOSep << h << ", " << sep/D << endl;
+                    sep=0.0;
                 }
 
                 h=h+s; k++;
@@ -197,17 +231,23 @@ int main(void)
             t=temp(t0[l-1],t0[l],N);
             P=P/((floor((T2-T1)/(s*D))+1)*4*L); //La presión es el cambio de momento total por unidad de tiempo y área (4L al estar en dos dimensiones)
 
+            l++;
             //Pasamos a un fichero la información obtenida
-            fichOT << t <<endl;
+            if(l<=nT)
+                fichOT << t << ", ";
+            else
+                fichOT << t << endl;
             //fichOPT << t << ", " << P << endl;
 
             //Histograma de velocidades
-            HistVel(t0[l-1],t0[l],N,vMx,vMy,vMm,t);
+            //HistVel(t0[l-1],t0[l],N,vMx,vMy,vMm,t);
+
+            //Separamos entre los distintos valores de temperatura
+            if(Sep)
+                fichOSep << endl;
 
             vMx=vMy=vMm=0.0;
-            l++;
-        } while (l<=nT);
-
+        } 
 
         fichOPos.close();
         fichOVel.close();
@@ -215,6 +255,7 @@ int main(void)
         fichOT.close();
         fichOPT.close();
         fichODesp.close();
+        fichOSep.close();
     }
 
     return 0;
@@ -339,7 +380,7 @@ void cond_inic_unif(int n,gsl_rng *tau)
         for(j=0;j<m;j++)
         {
             v=2*Pi*gsl_rng_uniform(tau);
-            fichOut << i*l << " " << j*l << " " << v0*cos(v) << " " << v0*sin(v) << endl;
+            fichOut << 0.5+i*l << " " << 0.5+j*l << " " << v0*cos(v) << " " << v0*sin(v) << endl;
         }
     }
 

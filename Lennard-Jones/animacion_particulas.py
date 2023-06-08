@@ -62,7 +62,7 @@ y_max = 4
 interval = 50 # Tiempo entre fotogramas en milisegundos
 show_trail = False # Muestra la "estela" del planeta
 trail_width = 1 # Ancho de la estela
-save_to_file = True # False: muestra la animación por pantalla,
+save_to_file = False # False: muestra la animación por pantalla,
                      # True: la guarda en un fichero 
                      # (CAMBIARLO CUANDO SE TENGA LA DEFINITIVA)
 dpi = 150 # Calidad del vídeo de salida (dots per inch)
@@ -71,7 +71,7 @@ dpi = 150 # Calidad del vídeo de salida (dots per inch)
 # Puede ser un número (el radio de todos los planetas) o una lista con
 # el radio de cada uno
 planet_radius = 0.04
-#planet_radius = [0.1, 0.2, 0.3, 0.4, 0.5]
+#planet_radius = [0.04, 0.04, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
 
 
 # Lectura del fichero de datos
