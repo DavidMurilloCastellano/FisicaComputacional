@@ -8,8 +8,8 @@
 #include "gsl_rng.h" //Libreria para generación de números aleatorios
 using namespace std;
 
-#define N 512 //Número de nodos del sistema en cada eje
-#define P 512 //Número de puntos que se grafican (<=N)
+#define N 1024 //Número de nodos del sistema en cada eje
+#define P 1024 //Número de puntos que se grafican (<=N)
 #define pMC 1e4 //Número de pasos de Monte-Carlo que se dan para calcular cada promedio de magnitudes
 #define T1 1.8 //Extremo inferior del intervalo de temperaturas
 #define T2 2.2 //Extremo superior del intervalo de temperaturas
@@ -39,13 +39,13 @@ int main (void)
     fichO.open("correlacion-N="+to_string(N)+".txt");
 
     //El algoritmo se ejecuta para cada una de las temperaturas consideradas
-    h=0.8;
+    h=1.2;
     //h=(T2-T1)/(nT-1); 
     //T=T1;
     H=N/P;
     for(k=0; k<nT; k++)
     {
-        h=h/2;
+        h=h/1.5;
         T=Tc-h;
         //Escribimos la temperatura en ambos ficheros
         fichO << T << endl;
