@@ -11,19 +11,19 @@ using namespace std;
 
 #define Pi 3.14159265358979 //Valor del número Pi
 #define N 16 //Número de átomos que conforman nuestro sistema
-#define L 4 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada
-#define nT 5 //Cantidad de distintos valores de temperatura que se estudiarán
+#define L 10 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada
+#define nT 6 //Cantidad de distintos valores de temperatura que se estudiarán
 #define T1 20 //Instante inicial de tiempo para estudiar las funciones de interés
-#define T2 50 //Instante final de tiempo para estudiar las funciones de interés
-#define K 1.1 //Factor en el que se incrementa la velocidad de las partículas al calentar el sistema
-#define v0 0 //Módulo de la velocidad inicial de las partículas en la caja
+#define T2 140 //Instante final de tiempo para estudiar las funciones de interés
+#define K 1.3 //Factor en el que se incrementa la velocidad de las partículas al calentar el sistema
+#define v0 1 //Módulo de la velocidad inicial de las partículas en la caja
 #define s 1e-4 //Paso con el que se aplica el algoritmo
-#define S 300 //Límite de tiempo hasta el que se considera la simulación
+#define S 140 //Límite de tiempo hasta el que se considera la simulación
 #define D 200 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
 #define R 1 //Separación mínimia inicial entre cada par de partículas
 #define E true //Indica si se desea calcular o no la energía del sistema
 #define Desp false //Indica si se quiere calcular el desplazamiento de una partícula respecto su posición inicial
-#define Sep true //Indica si se quiere calcular la distancia entre dos partículas
+#define Sep false //Indica si se quiere calcular la distancia entre dos partículas
 
 //Cabecera con todas las funciones que hemos definido
 void cond_inic_aleatorio(int n,gsl_rng *tau);
@@ -40,7 +40,7 @@ void HistVel(float a, float b, int n, double vMx, double vMy, double vMm, double
 
 int main(void)
 {
-    int i,j,k,l,t0[10];
+    int i,j,k,l,t0[10],m;
     double a[N][2], r[N][2], v[N][2], v2, h, T, V, t, vMx, vMy, vMm, P, r0[2], r1[2], desp, d, x, y, sep;
     ifstream fichIn;
     ofstream fichOPos, fichOVel, fichOE, fichOT, fichOPT, fichODesp, fichOSep;
@@ -52,9 +52,9 @@ int main(void)
     gsl_rng_set(tau,semilla); //Inicializamos la semilla
     
     //Generamos aleatoriamente las condiciones iniciales
-    //cond_inic_aleatorio(N, tau);
+    cond_inic_aleatorio(N, tau);
     //cond_inic_vx(N,tau);
-    cond_inic_unif(N,tau);
+    //cond_inic_unif(N,tau);
     //cond_inic_panal(N);
 
     //Copiamos las velocidades y posiciones iniciales aleatorias
@@ -95,9 +95,9 @@ int main(void)
         vMx=vMy=vMm=0.0;
         //Escribimos un vector con los instantes de tiempo en los que calentamos el sistema
         t0[0]=20; //Esperamos a que el sistema alcance el equilibrio
-        t0[1]=60;
+        t0[1]=40;
         for(i=2;i<nT;i++)
-            t0[i]=t0[i-1]+60;
+            t0[i]=t0[i-1]+20;
         t0[nT]=S;
         if(nT>9)
             fichOT << "Aumentar la dimensión del vector de temperaturas para calentar" << endl;
@@ -146,6 +146,7 @@ int main(void)
         
         while (l<=nT)
         {
+            m=0;
             //Calentamos el sistema aumentando la velocidad de las partículas
             if(l>1)
             {
@@ -160,7 +161,10 @@ int main(void)
             while(h<t0[l] && div)
             {
                 if(h>=T1 && h<=T2)
+                {
                     P=P+rh(r,v,a,s,N);
+                    m++;
+                }
                 else
                     rh(r,v,a,s,N);
 
@@ -229,7 +233,7 @@ int main(void)
 
             //Calculamos la temperatura y la presión en el intervalo especificado en el guion
             t=temp(t0[l-1],t0[l],N);
-            P=P/((floor((T2-T1)/(s*D))+1)*4*L); //La presión es el cambio de momento total por unidad de tiempo y área (4L al estar en dos dimensiones)
+            P=P/(4*L*m*s); //La presión es el cambio de momento total por unidad de tiempo y área (4L al estar en dos dimensiones)
 
             l++;
             //Pasamos a un fichero la información obtenida
@@ -237,7 +241,7 @@ int main(void)
                 fichOT << t << ", ";
             else
                 fichOT << t << endl;
-            //fichOPT << t << ", " << P << endl;
+            fichOPT << t << ", " << P << endl;
 
             //Histograma de velocidades
             //HistVel(t0[l-1],t0[l],N,vMx,vMy,vMm,t);
@@ -246,7 +250,7 @@ int main(void)
             if(Sep)
                 fichOSep << endl;
 
-            vMx=vMy=vMm=0.0;
+            vMx=vMy=vMm=P=0.0;
         } 
 
         fichOPos.close();

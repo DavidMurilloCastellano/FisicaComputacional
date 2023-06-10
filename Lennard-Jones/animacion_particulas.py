@@ -47,7 +47,7 @@ import numpy as np
 
 # Parámetros
 # ========================================
-v0="0"
+v0="1"
 
 #=========================================================================
 file_in = "particulas-v0="+v0+"_posiciones.txt" # Nombre del fichero de datos CAMBIAR "particulas_posiciones.txt"
@@ -55,9 +55,9 @@ file_out = "particulas-20-v0="+v0 # Nombre del fichero de salida (sin extensión
 
 # Límites de los ejes X e Y.
 x_min = 0
-x_max = 4
+x_max = 10
 y_min = 0
-y_max = 4
+y_max = 10
 
 interval = 50 # Tiempo entre fotogramas en milisegundos
 show_trail = False # Muestra la "estela" del planeta
