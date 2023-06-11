@@ -12,15 +12,16 @@ using namespace std;
 #define Pi 3.14159265358979 //Valor del número Pi
 #define N 16 //Número de átomos que conforman nuestro sistema
 #define L 10 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada
-#define nT 6 //Cantidad de distintos valores de temperatura que se estudiarán
+#define nT 1 //Cantidad de distintos valores de temperatura que se estudiarán
 #define T1 20 //Instante inicial de tiempo para estudiar las funciones de interés
-#define T2 140 //Instante final de tiempo para estudiar las funciones de interés
-#define K 1.3 //Factor en el que se incrementa la velocidad de las partículas al calentar el sistema
-#define v0 1 //Módulo de la velocidad inicial de las partículas en la caja
+#define T2 70 //Instante final de tiempo para estudiar las funciones de interés
+#define K 1 //Factor en el que se incrementa la velocidad de las partículas al calentar el sistema
+#define v0 5 //Módulo de la velocidad inicial de las partículas en la caja
 #define s 1e-4 //Paso con el que se aplica el algoritmo
-#define S 140 //Límite de tiempo hasta el que se considera la simulación
-#define D 200 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
+#define S 70 //Límite de tiempo hasta el que se considera la simulación
+#define D 100 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
 #define R 1 //Separación mínimia inicial entre cada par de partículas
+#define B 120 //Número de bins en el que se divide el eje de abscisas en la función de correlación
 #define E true //Indica si se desea calcular o no la energía del sistema
 #define Desp false //Indica si se quiere calcular el desplazamiento de una partícula respecto su posición inicial
 #define Sep false //Indica si se quiere calcular la distancia entre dos partículas
@@ -36,6 +37,7 @@ double rh(double r[][2], double v[][2], double a[][2], double h, int n);
 void vh(double v[][2], double a[][2], double h, int n);
 double temp(float a, float b,int n);
 void HistVel(float a, float b, int n, double vMx, double vMy, double vMm, double T);
+void corr(void);
 
 
 int main(void)
@@ -52,9 +54,9 @@ int main(void)
     gsl_rng_set(tau,semilla); //Inicializamos la semilla
     
     //Generamos aleatoriamente las condiciones iniciales
-    cond_inic_aleatorio(N, tau);
+    //cond_inic_aleatorio(N, tau);
     //cond_inic_vx(N,tau);
-    //cond_inic_unif(N,tau);
+    cond_inic_unif(N,tau);
     //cond_inic_panal(N);
 
     //Copiamos las velocidades y posiciones iniciales aleatorias
@@ -94,10 +96,10 @@ int main(void)
         T=V=P=0.0;
         vMx=vMy=vMm=0.0;
         //Escribimos un vector con los instantes de tiempo en los que calentamos el sistema
-        t0[0]=20; //Esperamos a que el sistema alcance el equilibrio
-        t0[1]=40;
+        t0[0]=T1; //Esperamos a que el sistema alcance el equilibrio
+        t0[1]=60;
         for(i=2;i<nT;i++)
-            t0[i]=t0[i-1]+20;
+            t0[i]=t0[i-1]+60;
         t0[nT]=S;
         if(nT>9)
             fichOT << "Aumentar la dimensión del vector de temperaturas para calentar" << endl;
@@ -113,7 +115,7 @@ int main(void)
                 T=T+v2/2;
 
             v2=sqrt(v2);
-            fichOPos << r[i][0] << ", " << r[i][1] << endl;
+            fichOPos << r[i][0] << " " << r[i][1] << endl;
             fichOVel << v[i][0] << " " << v[i][1] << " " << v2 << endl;
             //Calculamos los valores máximos de velocidad para hacer el histograma luego
             if(vMx<abs(v[i][0]))
@@ -180,8 +182,8 @@ int main(void)
                 //Calculamos la separación cuadrática entre las dos primeras partículas
                 if(Sep)
                 {
-                    r0[0]=r[6][0]; r0[1]=r[6][1];
-                    r1[0]=r[7][0]; r1[1]=r[7][1];
+                    r0[0]=r[1][0]; r0[1]=r[1][1];
+                    r1[0]=r[2][0]; r1[1]=r[2][1];
 
                     d=dist(r0,r1);
                     sep=sep+d*d;
@@ -201,7 +203,7 @@ int main(void)
                         if(E)
                             T=T+v2/2;
                         v2=sqrt(v2);
-                        fichOPos << r[i][0] << ", " << r[i][1] << endl;
+                        fichOPos << r[i][0] << " " << r[i][1] << endl;
                         fichOVel << v[i][0] << " " << v[i][1] << " " << v2 << endl;
                         if(vMx<abs(v[i][0]))
                             vMx=abs(v[i][0]);
@@ -233,7 +235,7 @@ int main(void)
 
             //Calculamos la temperatura y la presión en el intervalo especificado en el guion
             t=temp(t0[l-1],t0[l],N);
-            P=P/(4*L*m*s); //La presión es el cambio de momento total por unidad de tiempo y área (4L al estar en dos dimensiones)
+            //P=P/(4*L*m*s); //La presión es el cambio de momento total por unidad de tiempo y área (4L al estar en dos dimensiones)
 
             l++;
             //Pasamos a un fichero la información obtenida
@@ -252,6 +254,8 @@ int main(void)
 
             vMx=vMy=vMm=P=0.0;
         } 
+
+        corr();
 
         fichOPos.close();
         fichOVel.close();
@@ -711,6 +715,66 @@ void HistVel(float a, float b, int n, double vMx, double vMy, double vMm, double
             fichOut << endl;
         }
     }
+    fichOut.close();
+
+    return;
+}
+
+//Función corr: devuelve la función de correlación de pares centrada en la primera partícula del sistema. Para ello,
+//lee las posiciones de cada partícula del archivo "particulas_posiciones.txt" y los pasa a "particulas_corr.txt",
+//cambiando el origen del sistema de referencia a la posición de dicha partícula.
+void corr(void)
+{
+    double x, y, r0[2], r1[2], h, d, c;
+    int i, j, k, b[B];
+    ifstream fichIn;
+    ofstream fichOut;
+
+    h=(7-1)/(B*1.0); //Anchura de cada bin
+    c=T1/(s*D)+1;
+    for(i=0;i<B;i++)
+        b[i]=0;
+
+    fichIn.open("particulas-v0="+to_string(v0)+"_posiciones.txt");
+    fichOut.open("particulas_corr.txt");
+
+    if(!fichIn.is_open())
+        fichOut << "No se pudo abrir el archivo" << endl;
+    else
+    {
+        k=0;
+        while (!fichIn.eof())
+        {
+            k++;
+            fichIn >> r0[0];
+            fichIn >> r0[1];
+
+            x=r0[0]; y=r0[1];
+
+            for(i=1;i<N;i++)
+            {
+                fichIn >> r1[0];
+                fichIn >> r1[1];
+
+                if(k>c)
+                {
+                    d=dist(r1,r0);
+                    r0[0]=x; r0[1]=y;
+
+                    if(d>1 && d<7) //Comprobamos que la distancia esté en el intervalo que nos piden estudiar
+                    {
+                        j=floor((d-1)/h); //Quitamos el extremo inferior del intervalo
+                        b[j]++;
+                    }        
+                }
+            }
+        }
+
+        for(i=0;i<B;i++)
+            fichOut << 1+(i+0.5)*h << ", " << (b[i]*1.0)/((N-1)*(k-c)) << endl;
+    }
+
+    fichIn.close();
     fichOut.close();
 
     return;

@@ -47,7 +47,7 @@ import numpy as np
 
 # Parámetros
 # ========================================
-v0="1"
+v0="0"
 
 #=========================================================================
 file_in = "particulas-v0="+v0+"_posiciones.txt" # Nombre del fichero de datos CAMBIAR "particulas_posiciones.txt"
@@ -94,11 +94,11 @@ for frame_data_str in data_str.split("\n\n"):
     # (cada línea da la posición de un planta)
     for planet_pos_str in frame_data_str.split("\n"):
         # Lee la componente x e y de la línea
-        planet_pos = np.fromstring(planet_pos_str, sep=",")
+        planet_pos = np.fromstring(planet_pos_str, sep=" ")
         # Si la línea no está vacía, añade planet_pos a la lista de 
         # posiciones del fotograma
         if planet_pos.size > 0:
-            frame_data.append(np.fromstring(planet_pos_str, sep=","))
+            frame_data.append(np.fromstring(planet_pos_str, sep=" "))
 
     # Añade los datos de este fotograma a la lista
     frames_data.append(frame_data)
