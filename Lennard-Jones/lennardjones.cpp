@@ -10,18 +10,18 @@
 using namespace std;
 
 #define Pi 3.14159265358979 //Valor del número Pi
-#define N 16 //Número de átomos que conforman nuestro sistema
-#define L 10 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada
+#define N 112 //Número de átomos que conforman nuestro sistema
+#define L 12.5 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada
 #define nT 1 //Cantidad de distintos valores de temperatura que se estudiarán
 #define T1 20 //Instante inicial de tiempo para estudiar las funciones de interés
-#define T2 70 //Instante final de tiempo para estudiar las funciones de interés
+#define T2 50 //Instante final de tiempo para estudiar las funciones de interés
 #define K 1 //Factor en el que se incrementa la velocidad de las partículas al calentar el sistema
-#define v0 5 //Módulo de la velocidad inicial de las partículas en la caja
-#define s 1e-4 //Paso con el que se aplica el algoritmo
-#define S 70 //Límite de tiempo hasta el que se considera la simulación
-#define D 100 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
+#define v0 0 //Módulo de la velocidad inicial de las partículas en la caja
+#define s 1e-3 //Paso con el que se aplica el algoritmo
+#define S 50 //Límite de tiempo hasta el que se considera la simulación
+#define D 20 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
 #define R 1 //Separación mínimia inicial entre cada par de partículas
-#define B 120 //Número de bins en el que se divide el eje de abscisas en la función de correlación
+#define B 40 //Número de bins en el que se divide el eje de abscisas en la función de correlación
 #define E true //Indica si se desea calcular o no la energía del sistema
 #define Desp false //Indica si se quiere calcular el desplazamiento de una partícula respecto su posición inicial
 #define Sep false //Indica si se quiere calcular la distancia entre dos partículas
@@ -56,7 +56,7 @@ int main(void)
     //Generamos aleatoriamente las condiciones iniciales
     //cond_inic_aleatorio(N, tau);
     //cond_inic_vx(N,tau);
-    cond_inic_unif(N,tau);
+    //cond_inic_unif(N,tau);
     //cond_inic_panal(N);
 
     //Copiamos las velocidades y posiciones iniciales aleatorias
@@ -234,7 +234,7 @@ int main(void)
             }    
 
             //Calculamos la temperatura y la presión en el intervalo especificado en el guion
-            t=temp(t0[l-1],t0[l],N);
+            t=temp(T1,T2,N);
             //P=P/(4*L*m*s); //La presión es el cambio de momento total por unidad de tiempo y área (4L al estar en dos dimensiones)
 
             l++;
@@ -246,7 +246,7 @@ int main(void)
             fichOPT << t << ", " << P << endl;
 
             //Histograma de velocidades
-            //HistVel(t0[l-1],t0[l],N,vMx,vMy,vMm,t);
+            HistVel(T1,T2,N,vMx,vMy,vMm,t);
 
             //Separamos entre los distintos valores de temperatura
             if(Sep)
@@ -255,7 +255,7 @@ int main(void)
             vMx=vMy=vMm=P=0.0;
         } 
 
-        corr();
+        //corr();
 
         fichOPos.close();
         fichOVel.close();
@@ -401,28 +401,28 @@ void cond_inic_unif(int n,gsl_rng *tau)
 //Argumentos: n, número de partículas
 void cond_inic_panal(int n)
 {
-    int m, i;
-    double l, a, b, x1, x2;
+    int j, i;
+    double l, a, b, x1, x2, y;
     ofstream fichOut;
 
-    l=L/5.098; //Punto medio entre 5 y 3sqrt(3)
+    l=L/12.0622; //Punto medio entre 12 y 7sqrt(3)
     a=l*sqrt(3)/2; 
     b=l/2;
-    m=n/7;
     fichOut.open("pos-vel_iniciales.txt");
 
-    for(i=0;i<m; i++)
+    for(i=0;i<7; i++)
     {
         x1=a*(2*i+1); x2=2*a*i;
-        fichOut << x1 << " " << 0.0 << " " << 0.0 << " " << 0.0 << endl;
-        fichOut << x2 << " " << b << " " << 0.0 << " " << 0.0 << endl;
-        fichOut << x2 << " " << b+l << " " << 0.0 << " " << 0.0 << endl;
-        fichOut << x1 << " " << 2*l << " " << 0.0 << " " << 0.0 << endl;
-        fichOut << x1 << " " << 3*l << " " <<  0.0 << " " << 0.0 << endl;
-        fichOut << x2 << " " << 3*l+b << " " << 0.0 << " " << 0.0 << endl;
-        fichOut << x2 << " " << 4*l+b << " " << 0.0 << " " << 0.0 << endl;
-    }
+        for(j=0;j<4;j++)
+        {
+            y=3*j*l;
 
+            fichOut << x1 << " " << y+0.0 << " " << 0.0 << " " << 0.0 << endl;
+            fichOut << x2 << " " << y+b << " " << 0.0 << " " << 0.0 << endl;
+            fichOut << x2 << " " << y+b+l << " " << 0.0 << " " << 0.0 << endl;
+            fichOut << x1 << " " << y+2*l << " " << 0.0 << " " << 0.0 << endl;
+        }
+    }
 
     fichOut.close();   
     return;
@@ -623,7 +623,7 @@ double temp(float a, float b,int n)
 void HistVel(float a, float b, int n, double vMx, double vMy, double vMm, double T)
 {
     float t, aux, vx[N], vy[N], vm[N], lx, ly, lm;
-    int i, j, M;
+    int i, j, M, m;
     ifstream fichIn;
     ofstream fichOut;
 
@@ -645,6 +645,7 @@ void HistVel(float a, float b, int n, double vMx, double vMy, double vMm, double
             t=0.0;
         else
         {
+            m=0;
             //Calculamos la longitud de cada subintervalo
             lx=2*vMx/n; ly=2*vMy/n; //Hay valores positivos y negativos
             lm=vMm/n;
@@ -659,6 +660,7 @@ void HistVel(float a, float b, int n, double vMx, double vMy, double vMm, double
             
             while(t<=b && !fichIn.eof())
             {
+                m++;
                 for(i=0;i<n; i++)
                 {
                     //Eje X
@@ -694,13 +696,14 @@ void HistVel(float a, float b, int n, double vMx, double vMy, double vMm, double
             }
 
             //Calculamos el promedio de partículas con velocidad en cada subintervalo
-            M=n*(floor((b-a)/(s*D))+1);
+            //M=n*(floor((b-a)/(s*D))+1);
+            M=n*m;
             //Aproximamos la integral por el producto de la función de distribución por la amplitud del intervalo
             for(i=0;i<n;i++)
             {
-                vx[i]=vx[i]/(M*lx);
-                vy[i]=vy[i]/(M*ly);
-                vm[i]=vm[i]/(M*lm);
+                vx[i]=vx[i]/(lx*M);
+                vy[i]=vy[i]/(ly*M);
+                vm[i]=vm[i]/(lm*M);
             }
 
             //Pasamos al fichero la información obtenida
