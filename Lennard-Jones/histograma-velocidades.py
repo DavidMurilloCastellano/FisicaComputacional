@@ -7,8 +7,8 @@ from math import sqrt, pi
 #==========================================================================
 #Parámetros
 v0="0"
-T=0
-N=112
+T=4.689256
+N=16
 
 #=========================================================================
 
@@ -23,6 +23,7 @@ if T==0:
     file_out3= "hist-vel-Mod-v0="+v0+".pdf" # Nombre del fichero de salida
 else:
     file_in= "histograma-velocidades-v0="+v0+"_temp-T="+str(T)+".txt" # Nombre del fichero de datos con la nube de puntos a graficar
+    file_in2="pos-vel_iniciales.txt" #Nombre del fichero con velocidades iniciales
     file_out1 = "hist-vel-X-v0="+v0+"_temp-T="+str(T)+".pdf" # Nombre del fichero de salida
     file_out2= "hist-vel-Y-v0="+v0+"_temp-T="+str(T)+".pdf" # Nombre del fichero de salida
     file_out3= "hist-vel-Mod-v0="+v0+"_temp-T="+str(T)+".pdf" # Nombre del fichero de salida

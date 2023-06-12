@@ -10,20 +10,20 @@
 using namespace std;
 
 #define Pi 3.14159265358979 //Valor del número Pi
-#define N 112 //Número de átomos que conforman nuestro sistema
-#define L 12.5 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada
-#define nT 1 //Cantidad de distintos valores de temperatura que se estudiarán
-#define T1 20 //Instante inicial de tiempo para estudiar las funciones de interés
+#define N 16 //Número de átomos que conforman nuestro sistema
+#define L 4 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada
+#define nT 5 //Cantidad de distintos valores de temperatura que se estudiarán
+#define T1 10 //Instante inicial de tiempo para estudiar las funciones de interés
 #define T2 50 //Instante final de tiempo para estudiar las funciones de interés
-#define K 1 //Factor en el que se incrementa la velocidad de las partículas al calentar el sistema
+#define K 1.5 //Factor en el que se incrementa la velocidad de las partículas al calentar el sistema
 #define v0 0 //Módulo de la velocidad inicial de las partículas en la caja
-#define s 1e-3 //Paso con el que se aplica el algoritmo
+#define s 1e-4 //Paso con el que se aplica el algoritmo
 #define S 50 //Límite de tiempo hasta el que se considera la simulación
-#define D 20 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
+#define D 200 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
 #define R 1 //Separación mínimia inicial entre cada par de partículas
 #define B 40 //Número de bins en el que se divide el eje de abscisas en la función de correlación
 #define E true //Indica si se desea calcular o no la energía del sistema
-#define Desp false //Indica si se quiere calcular el desplazamiento de una partícula respecto su posición inicial
+#define Desp true //Indica si se quiere calcular el desplazamiento de una partícula respecto su posición inicial
 #define Sep false //Indica si se quiere calcular la distancia entre dos partículas
 
 //Cabecera con todas las funciones que hemos definido
@@ -56,7 +56,7 @@ int main(void)
     //Generamos aleatoriamente las condiciones iniciales
     //cond_inic_aleatorio(N, tau);
     //cond_inic_vx(N,tau);
-    //cond_inic_unif(N,tau);
+    cond_inic_unif(N,tau);
     //cond_inic_panal(N);
 
     //Copiamos las velocidades y posiciones iniciales aleatorias
@@ -97,9 +97,10 @@ int main(void)
         vMx=vMy=vMm=0.0;
         //Escribimos un vector con los instantes de tiempo en los que calentamos el sistema
         t0[0]=T1; //Esperamos a que el sistema alcance el equilibrio
-        t0[1]=60;
-        for(i=2;i<nT;i++)
-            t0[i]=t0[i-1]+60;
+        t0[1]=20;
+        //for(i=2;i<nT;i++)
+            //t0[i]=t0[i-1]+60;
+        t0[2]=30; t0[3]=35; t0[4]=45;
         t0[nT]=S;
         if(nT>9)
             fichOT << "Aumentar la dimensión del vector de temperaturas para calentar" << endl;
@@ -234,19 +235,19 @@ int main(void)
             }    
 
             //Calculamos la temperatura y la presión en el intervalo especificado en el guion
-            t=temp(T1,T2,N);
+            t=temp(t0[l-1],t0[l],N);
             //P=P/(4*L*m*s); //La presión es el cambio de momento total por unidad de tiempo y área (4L al estar en dos dimensiones)
 
-            l++;
             //Pasamos a un fichero la información obtenida
-            if(l<=nT)
+            if(l+1<=nT)
                 fichOT << t << ", ";
             else
                 fichOT << t << endl;
             fichOPT << t << ", " << P << endl;
 
             //Histograma de velocidades
-            HistVel(T1,T2,N,vMx,vMy,vMm,t);
+            HistVel(t0[l-1],t0[l],N,vMx,vMy,vMm,t);
+            l++;
 
             //Separamos entre los distintos valores de temperatura
             if(Sep)
@@ -642,7 +643,7 @@ void HistVel(float a, float b, int n, double vMx, double vMy, double vMm, double
     if(a>=0 && b<=S && a<b) //Se comprueba que los límites están dentro del rango de tiempo calculado
     {
         if(!fichIn.is_open())
-            t=0.0;
+            fichOut << "No se pudo abrir el archivo";
         else
         {
             m=0;
@@ -718,6 +719,7 @@ void HistVel(float a, float b, int n, double vMx, double vMy, double vMm, double
             fichOut << endl;
         }
     }
+    fichIn.close();
     fichOut.close();
 
     return;

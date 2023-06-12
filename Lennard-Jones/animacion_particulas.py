@@ -51,13 +51,13 @@ v0="0"
 
 #=========================================================================
 file_in = "particulas-v0="+v0+"_posiciones.txt" # Nombre del fichero de datos CAMBIAR "particulas_posiciones.txt"
-file_out = "particulas-20-v0="+v0 # Nombre del fichero de salida (sin extensión)
+file_out = "particulas-16-v0="+v0 # Nombre del fichero de salida (sin extensión)
 
 # Límites de los ejes X e Y.
 x_min = 0
-x_max = 12.5
+x_max = 4
 y_min = 0
-y_max = 12.5
+y_max = 4
 
 interval = 50 # Tiempo entre fotogramas en milisegundos
 show_trail = False # Muestra la "estela" del planeta
@@ -70,7 +70,7 @@ dpi = 150 # Calidad del vídeo de salida (dots per inch)
 # Radio del planeta, en las mismas unidades que la posición
 # Puede ser un número (el radio de todos los planetas) o una lista con
 # el radio de cada uno
-planet_radius = 0.125
+planet_radius = 0.04
 #planet_radius = [0.04, 0.04, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
 
 
