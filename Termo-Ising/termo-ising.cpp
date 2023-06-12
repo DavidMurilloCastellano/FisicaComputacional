@@ -8,12 +8,12 @@
 #include "gsl_rng.h" //Libreria para generación de números aleatorios
 using namespace std;
 
-#define N 128 //Número de nodos del sistema en cada eje
-#define D 100 //Cada cuantos puntos toma medidas para calcular los promedios correspondientes
+#define N 32 //Número de nodos del sistema en cada eje
+#define D 1 //Cada cuantos puntos toma medidas para calcular los promedios correspondientes
 #define pMC 1e6 //Número total de pasos de Monte-Carlo que se dan
-#define T1 1.5 //Extremo inferior del intervalo de temperaturas
-#define T2 3.5 //Extremo superior del intervalo de temperaturas
-#define nT 10 //Número de valores de temperatura que se van a considerar en el intervalo [T1,T2]
+#define T1 1.7 //Extremo inferior del intervalo de temperaturas
+#define T2 3.2 //Extremo superior del intervalo de temperaturas
+#define nT 5 //Número de valores de temperatura que se van a considerar en el intervalo [T1,T2]
 
 //Cabecera con todas las funciones que hemos definido
 int b2i(bool b);
@@ -37,7 +37,7 @@ int main (void)
     
     //Cálculo de constantes
     M=N*N; L=N-1; den=(pMC*1.0)/D;
-    fichO.open("magnitudes-N="+to_string(N)+".txt");
+    fichO.open("magnitudes-N="+to_string(N)+"-D=1.txt");
 
     //El algoritmo se ejecuta para cada una de las temperaturas consideradas
     h=(T2-T1)/(nT-1); 
