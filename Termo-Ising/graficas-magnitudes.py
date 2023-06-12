@@ -6,8 +6,7 @@ import io
 
 # Parámetros
 # ========================================
-N="128"
-
+N="16"
 
 
 
@@ -22,30 +21,39 @@ file_out3 = "calor-esp-N="+N+".pdf" # Nombre del fichero de salida
 # Lee el fichero a una cadena de texto
 with open(file_in, "r") as f:
     data_str = f.read()
-
-# Inicializa la lista con los datos de cada valor de temperatura.
 # frames_data[j] contiene los datos del valor de temperatura j-ésimo
 frames_data = list()
-T=[]
-
-# Itera sobre los bloques de texto separados por líneas vacías
-# (cada bloque corresponde a una temperatura)
-for frame_data_str in data_str.split("\n\n"):
-    if len(frame_data_str) > 0:
-        n=frame_data_str.index("\n")
-        T.append("T="+frame_data_str[:n])
-        frame_data_str=frame_data_str[n+1:]
-    # Almacena el bloque en una matriz
-    # (io.StringIO permite leer una cadena de texto como si fuera un
-    # fichero, lo que nos permite usar la función loadtxt de numpy)
-        frame_data = np.loadtxt(io.StringIO(frame_data_str), delimiter=",").T
-
-        # Añade los datos del fotograma (la configuración del sistema)
-        # a la lista
-        frames_data.append(frame_data)
-
 # Almacena toda la información en un array de numpy
-frames_data = np.array(frames_data)
+frames_data = np.array(np.loadtxt(io.StringIO(data_str), delimiter=",").T)
+
+#Magnetización
+fig1=plt.figure()
+x=frames_data[0]
+y=frames_data[1]
+plt.errorbar(x,y,yerr=frames_data[2],capsize=2,ecolor="k")
+plt.ylabel("Magnetización promedio")
+plt.xlabel("Temperatura")
+fig1.savefig(file_out1)
+
+#Energía
+fig2=plt.figure()
+x=frames_data[0]
+y=frames_data[3]
+plt.errorbar(x,y,yerr=frames_data[4],capsize=2,ecolor="k")
+plt.ylabel("Energía media")
+plt.xlabel("Temperatura")
+fig2.savefig(file_out2)
+
+#Calor específico
+fig3=plt.figure()
+x=frames_data[0]
+y=frames_data[5]
+plt.plot(x,y,marker='o',mec="k",mfc="k")
+plt.ylabel("Calor específico")
+plt.xlabel("Temperatura")
+fig3.savefig(file_out3)
+
+"""
 fig1=plt.figure()
 ax = plt.subplot(111)
 x=frames_data[0][0]
@@ -90,3 +98,4 @@ box = ax.get_position()
 ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
 plt.legend(T,loc='center left', bbox_to_anchor=(1, 0.5))
 fig3.savefig(file_out3)
+"""
