@@ -13,18 +13,18 @@ using namespace std;
 #define N 16 //Número de átomos que conforman nuestro sistema
 #define L 4 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada
 #define nT 5 //Cantidad de distintos valores de temperatura que se estudiarán
-#define T1 10 //Instante inicial de tiempo para estudiar las funciones de interés
-#define T2 50 //Instante final de tiempo para estudiar las funciones de interés
-#define K 1.5 //Factor en el que se incrementa la velocidad de las partículas al calentar el sistema
+#define T1 20 //Instante inicial de tiempo para estudiar las funciones de interés
+#define T2 300 //Instante final de tiempo para estudiar las funciones de interés
+#define K 1.1 //Factor en el que se incrementa la velocidad de las partículas al calentar el sistema
 #define v0 0 //Módulo de la velocidad inicial de las partículas en la caja
 #define s 1e-4 //Paso con el que se aplica el algoritmo
-#define S 50 //Límite de tiempo hasta el que se considera la simulación
+#define S 300 //Límite de tiempo hasta el que se considera la simulación
 #define D 200 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
 #define R 1 //Separación mínimia inicial entre cada par de partículas
 #define B 40 //Número de bins en el que se divide el eje de abscisas en la función de correlación
 #define E true //Indica si se desea calcular o no la energía del sistema
-#define Desp true //Indica si se quiere calcular el desplazamiento de una partícula respecto su posición inicial
-#define Sep false //Indica si se quiere calcular la distancia entre dos partículas
+#define Desp false //Indica si se quiere calcular el desplazamiento de una partícula respecto su posición inicial
+#define Sep true //Indica si se quiere calcular la distancia entre dos partículas
 
 //Cabecera con todas las funciones que hemos definido
 void cond_inic_aleatorio(int n,gsl_rng *tau);
@@ -97,10 +97,10 @@ int main(void)
         vMx=vMy=vMm=0.0;
         //Escribimos un vector con los instantes de tiempo en los que calentamos el sistema
         t0[0]=T1; //Esperamos a que el sistema alcance el equilibrio
-        t0[1]=20;
-        //for(i=2;i<nT;i++)
-            //t0[i]=t0[i-1]+60;
-        t0[2]=30; t0[3]=35; t0[4]=45;
+        t0[1]=60;
+        for(i=2;i<nT;i++)
+            t0[i]=t0[i-1]+60;
+        //t0[2]=30; t0[3]=35; t0[4]=45;
         t0[nT]=S;
         if(nT>9)
             fichOT << "Aumentar la dimensión del vector de temperaturas para calentar" << endl;
@@ -223,7 +223,7 @@ int main(void)
                     desp=0.0;
 
                     //Calculamos la separación cuadrática media entre las dos primeras partículas
-                    if(Sep)
+                    if(Sep && h<T2)
                         fichOSep << h << ", " << sep/D << endl;
                     sep=0.0;
                 }
@@ -246,7 +246,7 @@ int main(void)
             fichOPT << t << ", " << P << endl;
 
             //Histograma de velocidades
-            HistVel(t0[l-1],t0[l],N,vMx,vMy,vMm,t);
+            //HistVel(t0[l-1],t0[l],N,vMx,vMy,vMm,t);
             l++;
 
             //Separamos entre los distintos valores de temperatura
