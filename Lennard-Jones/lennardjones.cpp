@@ -12,19 +12,19 @@ using namespace std;
 #define Pi 3.14159265358979 //Valor del número Pi
 #define N 16 //Número de átomos que conforman nuestro sistema
 #define L 4 //Tamaño (en las unidades consideradas) de cada lado de la caja cuadrada
-#define nT 5 //Cantidad de distintos valores de temperatura que se estudiarán
+#define nT 1 //Cantidad de distintos valores de temperatura que se estudiarán
 #define T1 20 //Instante inicial de tiempo para estudiar las funciones de interés
-#define T2 300 //Instante final de tiempo para estudiar las funciones de interés
-#define K 1.1 //Factor en el que se incrementa la velocidad de las partículas al calentar el sistema
+#define T2 50 //Instante final de tiempo para estudiar las funciones de interés
+#define K 1 //Factor en el que se incrementa la velocidad de las partículas al calentar el sistema
 #define v0 0 //Módulo de la velocidad inicial de las partículas en la caja
 #define s 1e-4 //Paso con el que se aplica el algoritmo
-#define S 300 //Límite de tiempo hasta el que se considera la simulación
+#define S 50 //Límite de tiempo hasta el que se considera la simulación
 #define D 200 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
 #define R 1 //Separación mínimia inicial entre cada par de partículas
 #define B 40 //Número de bins en el que se divide el eje de abscisas en la función de correlación
 #define E true //Indica si se desea calcular o no la energía del sistema
 #define Desp false //Indica si se quiere calcular el desplazamiento de una partícula respecto su posición inicial
-#define Sep true //Indica si se quiere calcular la distancia entre dos partículas
+#define Sep false //Indica si se quiere calcular la distancia entre dos partículas
 
 //Cabecera con todas las funciones que hemos definido
 void cond_inic_aleatorio(int n,gsl_rng *tau);
@@ -256,7 +256,7 @@ int main(void)
             vMx=vMy=vMm=P=0.0;
         } 
 
-        //corr();
+        corr();
 
         fichOPos.close();
         fichOVel.close();
@@ -735,7 +735,7 @@ void corr(void)
     ifstream fichIn;
     ofstream fichOut;
 
-    h=(7-1)/(B*1.0); //Anchura de cada bin
+    h=(L/sqrt(2)-1)/(B*1.0); //Anchura de cada bin
     c=T1/(s*D)+1;
     for(i=0;i<B;i++)
         b[i]=0;
@@ -776,7 +776,7 @@ void corr(void)
         }
 
         for(i=0;i<B;i++)
-            fichOut << 1+(i+0.5)*h << ", " << (b[i]*1.0)/((N-1)*(k-c)) << endl;
+            fichOut << 1+(i+0.5)*h << ", " << (b[i]*1.0)/(h*(N-1)*(k-c)) << endl;
     }
 
     fichIn.close();
