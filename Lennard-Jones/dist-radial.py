@@ -3,15 +3,25 @@ from matplotlib import pyplot as plt
 from matplotlib.pyplot import cm
 import numpy as np
 import io
+from math import pi
 
 #PARÁMETROS
 N=16
+L=10
 solido=False
+gas=True
 
 
 #Ficheros
 file_in = "particulas_corr.txt" # Nombre del fichero de datos
 file_out = "particulas_corr.pdf" # Nombre del fichero de salida
+
+#Funciones de ajuste
+A=L*L
+def f1(r):
+    return 2*pi*r/A
+def f2(r):
+    return (2*pi*r-8*np.multiply(r,np.arccos(L/(2*r))))/A
 
 # Lectura del fichero de datos
 # ========================================
@@ -48,6 +58,12 @@ if(solido):
     for i in range(len(z)):
         z[i]=z[i]*k
     plt.plot(x,z,c='m',label="Teoría")
+    plt.legend()
+if(gas):
+    z1=np.linspace(1,L/2,100)
+    z2=np.linspace(L/2,L/np.sqrt(2),100)
+    plt.plot(z1,f1(z1),c='m',label="Teoría")
+    plt.plot(z2,f2(z2),c='m')
     plt.legend()
 plt.xlabel("$r$")
 plt.ylabel("Densidad de partículas")
