@@ -6,7 +6,7 @@ import io
 
 #PARÁMETROS
 N=16
-solido=True
+solido=False
 
 
 #Ficheros

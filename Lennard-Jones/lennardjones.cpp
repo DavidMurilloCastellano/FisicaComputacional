@@ -16,7 +16,7 @@ using namespace std;
 #define T1 20 //Instante inicial de tiempo para estudiar las funciones de interés
 #define T2 50 //Instante final de tiempo para estudiar las funciones de interés
 #define K 1 //Factor en el que se incrementa la velocidad de las partículas al calentar el sistema
-#define v0 0 //Módulo de la velocidad inicial de las partículas en la caja
+#define v0 4 //Módulo de la velocidad inicial de las partículas en la caja
 #define s 1e-4 //Paso con el que se aplica el algoritmo
 #define S 50 //Límite de tiempo hasta el que se considera la simulación
 #define D 200 //Número de líneas que se pasan al fichero para crear el vídeo de la simulación
