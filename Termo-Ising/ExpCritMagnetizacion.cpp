@@ -80,7 +80,7 @@ int main (void)
         varmag=sMag2/pMC-mMag*mMag;       
 
         //Pasamos los resultados a un fichero
-        fichO << log(eT) << ", " << log(mMag) << endl;
+        fichO << log(eT) << ", " << log(mMag) << ", " << 1.96*sqrt(varmag/pMC)/mMag << endl;
         fichG << T << ", " << mMag << ", " << 1.96*sqrt(varmag/pMC) << endl;        
     } while (k<=6);
 

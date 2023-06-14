@@ -31,7 +31,7 @@ frames_data = np.array(np.loadtxt(io.StringIO(data_str), delimiter=",").T)
 x=frames_data[0]
 y=frames_data[1]
 fig1=plt.figure()
-plt.plot(x,y,".",label="Datos")
+plt.errorbar(x,y,yerr=frames_data[2],fmt="none",capsize=2,c='k',label="Datos")
 #Ajustamos a la curva
 optimizedParameters, pcov = opt.curve_fit(func, x, y)
 plt.plot(x, func(x, *optimizedParameters), label="Ajuste")
@@ -55,7 +55,7 @@ frames_data = np.array(np.loadtxt(io.StringIO(data_str), delimiter=",").T)
 x=frames_data[0]
 y=frames_data[1]
 fig2=plt.figure()
-plt.plot(x,y,".",label="Datos")
+plt.errorbar(x,y,yerr=frames_data[2],fmt="none",capsize=2,c='k',label="Datos")
 x=np.linspace(1.8,2.2691,100)
 plt.plot(x,func2(x,optimizedParameters[0],optimizedParameters[1]), label="Ajuste")
 plt.xlabel("$T$")
