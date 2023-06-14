@@ -6,10 +6,16 @@ import io
 
 # Parámetros
 # ========================================
-N="32"
+N="128"
 N1=""
 N2=""
 N3=""
+
+
+def func(T):
+    x=1-np.power(np.sinh(2/T),-4)
+    return np.power(x,1/8)
+
 
 
 #Ficheros
@@ -62,6 +68,9 @@ if(N3!=""):
 fig1=plt.figure()
 x=frames_data[0]
 y=frames_data[1]
+z=np.linspace(1.5,2.26918,1000)
+z1=np.linspace(2.26918,2.2692,2)
+z2=np.linspace(2.26918,3.5,2)
 plt.errorbar(x,y,yerr=frames_data[2],capsize=2,c="b",label="N="+N)
 if(N1!=""):
     plt.errorbar(x,frames_data1[1],yerr=frames_data1[2],capsize=2,c="g",label="N="+N1)
@@ -73,6 +82,10 @@ plt.ylabel("Magnetización promedio")
 plt.xlabel("Temperatura")
 if(N1!=""):
     plt.legend()
+plt.plot(z,func(z), c='m', label="Teoría")
+plt.plot(z1,[0.241776, 0],c='m')
+plt.plot(z2,[0, 0],c='m')
+plt.legend()
 fig1.savefig(file_out1)
 
 #Energía

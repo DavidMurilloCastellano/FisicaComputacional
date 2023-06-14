@@ -9,6 +9,7 @@ file_in1 = "ln(m)-ln(T-Tc).txt" # Nombre del fichero de datos a ajustar
 file_in2= "m-T.txt" # Nombre del fichero de datos con la nube de puntos a graficar
 file_out1 = "ln(m)-ln(T-Tc).pdf" # Nombre del fichero de salida con el ajuste
 file_out2= "m-T.pdf" # Nombre del fichero de salida con la nube de puntos
+file_fit="ExpCritMagn_fit.txt"
 
 #Función a ajustar
 def func(x, a, b):
@@ -34,9 +35,14 @@ plt.plot(x,y,".",label="Datos")
 #Ajustamos a la curva
 optimizedParameters, pcov = opt.curve_fit(func, x, y)
 plt.plot(x, func(x, *optimizedParameters), label="Ajuste")
-plt.title("m="+str(optimizedParameters[0])+", n="+str(optimizedParameters[1]))
+plt.xlabel("ln$(T_c-T)$")
+plt.ylabel("ln$(m)$")
+#plt.title("m="+str(optimizedParameters[0])+", n="+str(optimizedParameters[1]))
 plt.legend()
 fig1.savefig(file_out1)
+
+with open(file_fit, "w") as f:
+    f.write(str(optimizedParameters[0])+" "+str(1.96*np.sqrt(pcov[0][0])))
 
 #Graficamos deshaciendo el cambio de variable
 with open(file_in2, "r") as f:
@@ -52,7 +58,9 @@ fig2=plt.figure()
 plt.plot(x,y,".",label="Datos")
 x=np.linspace(1.8,2.2691,100)
 plt.plot(x,func2(x,optimizedParameters[0],optimizedParameters[1]), label="Ajuste")
-plt.title("Magnetización promedio frente a temperatura. N=2048")
+plt.xlabel("$T$")
+plt.ylabel("m")
+#plt.title("Magnetización promedio frente a temperatura. N=2048")
 plt.legend()
 fig2.savefig(file_out2)
 
